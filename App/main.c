@@ -1,15 +1,15 @@
 /*!
  *     COPYRIGHT NOTICE
- *     Copyright (c) 2013,ɽ��Ƽ�
+ *     Copyright (c) 2013,山外科技
  *     All rights reserved.
- *     �������ۣ�ɽ���ѧ��̳ http://www.vcan123.com
+ *     技术讨论：山外初学论坛 http://www.vcan123.com
  *
- *     ��ע�������⣬�����������ݰ�Ȩ����ɽ��Ƽ����У�δ������������������ҵ��;��
- *     �޸�����ʱ���뱣��ɽ��Ƽ��İ�Ȩ������
+ *     除注明出处外，以下所有内容版权均属山外科技所有，未经允许，不得用于商业用途，
+ *     修改内容时必须保留山外科技的版权声明。
  *
  * @file       main.c
- * @brief      ɽ��K60 ƽ̨������
- * @author     ɽ��Ƽ�
+ * @brief      山外K60 平台主程序
+ * @author     山外科技
  * @version    v5.0
  * @date       2013-08-28
  */
@@ -18,27 +18,33 @@
 #include "include.h"
 
 /*!
- *  @brief      main����
+ *  @brief      main函数
  *  @since      v5.0
- *  @note       ���� LED �����Ƿ�����
-                ������Ч����LED0��LED1ͬʱ������˸
+ *  @note       测试 LED 功能是否正常
+                看到的效果是LED0和LED1同时亮灭闪烁
  */
 void main()
 {
-    led_init(LED0);                         //��ʼ��LED0
-    led_init(LED1);                         //��ʼ��LED1
+    led_init(LED0);                         //初始化LED0
+    led_init(LED1);                         //初始化LED1
+    ftm_pwm_init(FTM0, FTM_CH6, 100, 1340); //舵机初始化  FTM0
 
-    while(1)
-    {        
-        led(LED0, LED_ON);                  //LED0 ��
-        led_turn(LED1);                     //LED1��ת
+    while (1)
+    {
+        // int i = 0;
+        // led(LED0, LED_ON); //LED0 亮
+        // led_turn(LED1);    //LED1翻转
 
-        DELAY_MS(500);                      //��ʱ500ms
+        // DELAY_MS(500); //延时500ms
 
-        led(LED0, LED_OFF);                 //LED0 ��
-        led_turn(LED1);                     //LED1��ת
+        // led(LED0, LED_OFF); //LED0 灭
+        // led_turn(LED1);     //LED1翻转
 
-        DELAY_MS(500);                      //��ʱ500ms
+        // DELAY_MS(500); //延时500ms
+
+        ftm_pwm_duty(FTM0, FTM_CH6, 1470);
+        DELAY_MS(2000); //延时500ms
+        ftm_pwm_duty(FTM0, FTM_CH6, 1190);
+        DELAY_MS(2000); //延时500ms
     }
 }
-
