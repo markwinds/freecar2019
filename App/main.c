@@ -17,31 +17,6 @@
 #include "common.h"
 #include "include.h"
 
-void esp8266_init()
-{
-    printf("AT+CWMODE=1\r\n");
-    DELAY_MS(1000);
-    printf("AT+CWJAP=\"611sys\",\"611sys611\"\r\n");
-    DELAY_MS(8000);
-    printf("AT+CIPSTART=\"TCP\",\"192.168.1.78\",1234\r\n");
-    DELAY_MS(8000);
-}
-
-void send_to_pc(char *str)
-{
-    int len = 0;
-    while (str[len] != '#')
-    {
-        len++;
-    }
-    str[len] = '\0';
-    len += 2;
-    printf("AT+CIPSEND=");
-    printf("%d\r\n", len);
-    DELAY_MS(500);
-    printf("%s\r\n", str);
-}
-
 /*!
  *  @brief      main函数
  *  @since      v5.0
@@ -52,40 +27,20 @@ void main()
 {
     led_init(LED0); //初始化LED0
     led_init(LED1); //初始化LED1
-    //ftm_pwm_init(FTM0, FTM_CH6, 100, 1340); //舵机初始化  FTM0
-
-    //电机左
-    // ftm_pwm_init(FTM3, FTM_CH0, 10000, 3000);
-    // ftm_pwm_init(FTM3, FTM_CH1, 10000, 1340);
-    //initMotorSteer();
-
-    esp8266_init();
+    initUart();
+    initMotorSteer();
 
     while (1)
     {
-        // int i = 0;
-        // led(LED0, LED_ON); //LED0 亮
-        // led_turn(LED1);    //LED1翻转
-
-        // DELAY_MS(500); //延时500ms
-
-        // led(LED0, LED_OFF); //LED0 灭
-        led_turn(LED1); //LED1翻转
-
-        send_to_pc("haha#");
-
-        // DELAY_MS(500); //延时500ms
-
-        //ftm_pwm_duty(FTM0, FTM_CH6, 1470);
-        //DELAY_MS(100); //延时500ms
-        //ftm_pwm_duty(FTM0, FTM_CH6, 1190);
-        //int i = -30;
-        DELAY_MS(100); //延时500ms
-        // setSteer(STEER_MID + 100);
-        // if (i >= 30)
-        //     i = -30;
-
-        // ftm_pwm_duty(FTM3, FTM_CH0, 1470);
-        // ftm_pwm_duty(FTM3, FTM_CH1, 4470);
+        int i = -50;
+        led_turn(LED0); //LED1翻转
+        setSteer(-30);
+        DELAY_MS(5000);
+        setSteer(30);
+        DELAY_MS(5000);
+        waitToDo();
+        // setSteer(i++);
+        // if (i >= 50)
+        //     i = -50;
     }
 }

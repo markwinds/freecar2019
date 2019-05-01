@@ -13,15 +13,19 @@ void initMotorSteer()
     //右电机初始化
     ftm_pwm_init(FTM3, FTM_CH2, 10000, 0);
     ftm_pwm_init(FTM3, FTM_CH3, 10000, 0);
-    float temp = fabs((STEER_MAX_LEFT - STEER_MID) / 50.0);
+    float temp = ((float)(STEER_MAX_LEFT - STEER_MID) / 50.0);
     for (int i = 0; i < 50; i++)
     {
         steerTable[i] = STEER_MID + (int)(temp * (50 - i));
+        // DELAY_MS(20);
+        // printf("%d,%d ", i, steerTable[i]);
     }
     temp = fabs((STEER_MAX_RIGHT - STEER_MID) / 50.0);
     for (int i = 51; i < 101; i++)
     {
         steerTable[i] = STEER_MID + (int)(temp * (50 - i));
+        // DELAY_MS(20);
+        // printf("%d,%d ", i, steerTable[i]);
     }
     steerTable[50] = STEER_MID;
 }

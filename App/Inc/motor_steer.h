@@ -11,6 +11,7 @@
 extern int steerTable[101]; //将方向100等分
 
 extern void initMotorSteer();
+extern void setSteer(int dir);
 extern void setSpeedLeft(int speed);
 extern void setSpeedRight(int speed);
 
