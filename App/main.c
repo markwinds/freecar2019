@@ -30,6 +30,8 @@ void main()
     initUart();
     initMotorSteer();
 
+    // strtok(NULL, " ");
+    // vector<int> a;
     while (1)
     {
         int i = -50;

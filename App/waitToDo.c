@@ -3,9 +3,14 @@
 
 void waitToDo()
 {
+    // if (uart4_to_do_flag)
+    // {
+    //     uart4_to_do_flag = 0;
+    //     buffHandler();
+    // }
     if (uart4_to_do_flag)
     {
         uart4_to_do_flag = 0;
-        buffHandler();
+        analysisCommand();
     }
 }
