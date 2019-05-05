@@ -4,9 +4,9 @@
 #include "common.h"
 #include "include.h"
 
-#define STEER_MID 1340
-#define STEER_MAX_LEFT 1470
-#define STEER_MAX_RIGHT 1190
+#define STEER_MID 1300
+#define STEER_MAX_LEFT 1450
+#define STEER_MAX_RIGHT 1150
 
 extern int steerTable[101]; //将方向100等分
 

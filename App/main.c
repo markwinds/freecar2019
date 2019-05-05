@@ -35,15 +35,20 @@ void main()
     // vector<int> a;
     while (1)
     {
-        int i = -50;
         led_turn(LED0); //LED1翻转
-        //setSteer(-30);
-        DELAY_MS(50);
-        //setSteer(30);
-        DELAY_MS(50);
-        waitToDo();
-        // setSteer(i++);
-        // if (i >= 50)
-        //     i = -50;
-    }
+        setSpeedRight(0);
+        DELAY_MS(1000);
+
+        setSteer(-50);
+        setSpeedLeft(3000);
+        DELAY_MS(1000);
+
+        setSteer(50);
+        setSpeedRight(3000);
+        DELAY_MS(1000);
+
+        setSteer(0);
+        setSpeedLeft(0);
+        DELAY_MS(1000);
+        }
 }
