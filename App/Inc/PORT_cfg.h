@@ -52,12 +52,12 @@
 #define FTM0_CH7_PIN PTD7 //PTD7、PTA2            PTA2不要用（与Jtag冲突）
 
 //      模块通道    端口          可选范围              建议
-#define FTM1_CH0_PIN PTA12 //PTA12       //PTA8、PTA12、PTB0
-#define FTM1_CH1_PIN PTA13 //PTA9、PTA13、PTB1
+#define FTM1_CH0_PIN PTA8 //PTA12       //PTA8、PTA12、PTB0
+#define FTM1_CH1_PIN PTA9 //PTA9、PTA13、PTB1
 
 //      模块通道    端口          可选范围              建议
-#define FTM2_CH0_PIN PTB18 //PTA10、PTB18
-#define FTM2_CH1_PIN PTB19 //PTA11、PTB19
+#define FTM2_CH0_PIN PTB10 //PTA10、PTB18
+#define FTM2_CH1_PIN PTB11 //PTA11、PTB19
 
 #ifdef MK60F15 //ALT6       ALT3        ALT4        FX 才有FTM3模块
 

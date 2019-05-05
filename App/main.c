@@ -29,6 +29,7 @@ void main()
     led_init(LED1); //初始化LED1
     initUart();
     initMotorSteer();
+    Quad_Init();
 
     // strtok(NULL, " ");
     // vector<int> a;
@@ -36,10 +37,10 @@ void main()
     {
         int i = -50;
         led_turn(LED0); //LED1翻转
-        setSteer(-30);
-        DELAY_MS(5000);
-        setSteer(30);
-        DELAY_MS(5000);
+        //setSteer(-30);
+        DELAY_MS(50);
+        //setSteer(30);
+        DELAY_MS(50);
         waitToDo();
         // setSteer(i++);
         // if (i >= 50)

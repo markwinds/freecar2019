@@ -9,10 +9,24 @@ void analysisCommand2(char *argv[])
 {
     if (!strcmp("get", argv[0]))
     {
-        if (!strcmp("long", argv[1]))
+        if (!strcmp("ll", argv[1]))
         {
-            printf("successful\n");
+            printf("%d", quad_val_left);
         }
+    }
+    if (!strcmp("get", argv[0]))
+    {
+        if (!strcmp("lr", argv[1]))
+        {
+            printf("%d", quad_val_right);
+        }
+    }
+    if (!strcmp("steer", argv[0]))
+    {
+        int temp;
+        sscanf(argv[1], "%d", &temp);
+        ftm_pwm_init(FTM0, FTM_CH6, 100, temp);
+        printf("Steer set as %d ", temp);
     }
 }
 

@@ -23,6 +23,7 @@
 #include "uart.h"        //设置串口
 #include "waitToDo.h"    //每次循环检测是否要执行的操作
 #include "command.h"     //命令行操作
+#include "quad.h"        //编码器
 //#include "esp.h"         //无线模块
 
 #endif //__INCLUDE_H__
