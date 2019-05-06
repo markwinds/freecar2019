@@ -9,27 +9,29 @@ void main()
     initMotorSteer();
     Quad_Init();
     camera_init(imgbuff);
+    initCameraInterrupt();
 
     // strtok(NULL, " ");
     // vector<int> a;
     while (1)
     {
-        led_turn(LED0); //LED1翻转
-        setSpeedRight(0);
-        DELAY_MS(1000);
+        led_turn(LED1);
+        DELAY_MS(500);
+        // setSpeedRight(0);
+        // DELAY_MS(1000);
 
-        setSteer(-50);
-        setSpeedLeft(3000);
-        DELAY_MS(1000);
+        // setSteer(-50);
+        // setSpeedLeft(3000);
+        // DELAY_MS(1000);
 
-        setSteer(50);
-        setSpeedRight(3000);
-        DELAY_MS(1000);
+        // setSteer(50);
+        // setSpeedRight(3000);
+        // DELAY_MS(1000);
 
-        setSteer(0);
-        setSpeedLeft(0);
-        DELAY_MS(1000);
+        // setSteer(0);
+        // setSpeedLeft(0);
+        // DELAY_MS(1000);
 
-        camera_get_img();
+        // camera_get_img();
     }
 }
