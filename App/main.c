@@ -5,6 +5,7 @@ void main()
 {
     led_init(LED0); //初始化LED0
     led_init(LED1); //初始化LED1
+    UI_INIT();
     // initUart();
     // initMotorSteer();
     Quad_Init();
@@ -33,5 +34,6 @@ void main()
         // DELAY_MS(1000);
 
         // camera_get_img();
+        Open_UI();
     }
 }
