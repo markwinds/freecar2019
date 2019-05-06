@@ -5,11 +5,11 @@ void main()
 {
     led_init(LED0); //初始化LED0
     led_init(LED1); //初始化LED1
-    initUart();
-    initMotorSteer();
+    // initUart();
+    // initMotorSteer();
     Quad_Init();
-    camera_init(imgbuff);
-    initCameraInterrupt();
+    // //camera_init(imgbuff);
+    // initCameraInterrupt();
 
     // strtok(NULL, " ");
     // vector<int> a;

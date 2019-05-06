@@ -26,6 +26,7 @@
 #include "quad.h"              //编码器
 #include "VCAN_camera.h"       //摄像头
 #include "VCAN_OV7725_Eagle.h" //摄像头
+#include "VCAN_LCD.h"          //LCD
 //#include "esp.h"         //无线模块
 
 #endif //__INCLUDE_H__
