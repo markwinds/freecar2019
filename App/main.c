@@ -10,14 +10,18 @@ void main()
     // initUart();
     // initMotorSteer();
     Quad_Init();
+    LCD_init();
     camera_init(imgbuff);
 
-    // strtok(NULL, " ");
-    // vector<int> a;
+    Site_t site = {0, 0};   //x = 10 ,y = 20
+    Size_t size = {80, 60}; //W = 320,H = 240
+
     while (1)
     {
         led_turn(LED1);
         DELAY_MS(500);
+        camera_get_img();
+        LCD_Img_gray_Z(site, size, imgbuff, size);
         // setSpeedRight(0);
         // DELAY_MS(1000);
 
