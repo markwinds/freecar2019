@@ -19,9 +19,9 @@ void main()
     while (1)
     {
         led_turn(LED1);
-        DELAY_MS(500);
+        DELAY_MS(20);
         camera_get_img();
-        LCD_Img_gray_Z(site, size, imgbuff, size);
+        LCD_Img_Binary(site, size, imgbuff);
         // setSpeedRight(0);
         // DELAY_MS(1000);
 
