@@ -8,6 +8,7 @@ void main()
     led_init(LED1); //初始化LED1
     led_init(LED2);
     led_init(LED3);
+    UI_INIT();
     // initUart();
     // initMotorSteer();
     Quad_Init();
@@ -18,23 +19,6 @@ void main()
     {
         led_turn(LED1);
         DELAY_MS(500);
-        // camera_get_img();
-        // LCD_Img_Binary(site, size, imgbuff);
-        // setSpeedRight(0);
-        // DELAY_MS(1000);
-
-        // setSteer(-50);
-        // setSpeedLeft(3000);
-        // DELAY_MS(1000);
-
-        // setSteer(50);
-        // setSpeedRight(3000);
-        // DELAY_MS(1000);
-
-        // setSteer(0);
-        // setSpeedLeft(0);
-        // DELAY_MS(1000);
-
-        // camera_get_img();
+        Open_UI();
     }
 }
