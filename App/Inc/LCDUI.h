@@ -38,8 +38,8 @@ typedef struct Lcd_State //状态结构体
 } Lcd_State;
 
 /*------------------------------------------------全局变量---------------------------------------------*/
-extern Lcd_State wait_middle, wait_begin, wait_end, normal_page, imgbuff_show, read_picture; //lcd等待按键时的4种状态
-extern Lcd_State *p_current_state;															 //指向当前状态的指针
+extern Lcd_State wait_middle, normal_page, imgbuff_show, read_picture; //lcd等待按键时的4种状态
+extern Lcd_State *p_current_state;									   //指向当前状态的指针
 
 extern int page;				  //ui当前所在页
 extern int current_row;			  //ui当前所在行
@@ -48,7 +48,6 @@ extern Screen_Data screen_data[]; //ui显示的参数
 extern float flash_in; //是否将参数写进flash的标志，改变一次写入一次
 extern float motor_go; //在显示状态下控制电机是否转动的变量
 extern uint8 key_on;
-extern uint8 lcd_mode;
 extern uint8 is_show_va;
 extern uint8 is_show_line;
 extern uint8 please_clear;
@@ -69,7 +68,6 @@ Lcd_State *goto_Begin(Lcd_State *pThis);
 Lcd_State *goto_End(Lcd_State *pThis);
 Lcd_State *ignore_Oprate(Lcd_State *pThis);
 Lcd_State *goto_Set(Lcd_State *pThis);
-Lcd_State *goto_Wait(Lcd_State *pThis);
 Lcd_State *goto_next(Lcd_State *pThis);
 Lcd_State *data_Down(Lcd_State *pThis);
 Lcd_State *data_Up(Lcd_State *pThis);

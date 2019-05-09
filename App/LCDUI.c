@@ -8,7 +8,6 @@
 #include "include.h"
 #include <string.h>
 
-uint8 lcd_mode = IMG_MODE;
 uint8 key_on = 0;
 uint8 is_show_va = 0;
 uint8 is_show_line = 0;
@@ -55,24 +54,6 @@ Lcd_State wait_middle =
 		goto_Begin, //下 去最上面
 		turn_Front, //左 向前翻页
 		turn_Back   //右 向后翻页
-};
-/*光标停留在本页的第一行*/
-Lcd_State wait_begin =
-	{
-		goto_Set,  //中 选中
-		goto_Wait, //上 放选，进入到等待模式
-		goto_next, //下 下一个
-		data_Down, //左	改函数不一定改变数据，如果没有选中数据则会跳转到等待模式
-		data_Up	//右
-};
-/*光标停留在本页的最后一行*/
-Lcd_State wait_end =
-	{
-		goto_Set,	//中
-		goto_Before, //上
-		goto_Wait,   //下
-		data_Down,   //左
-		data_Up		 //右
 };
 Lcd_State normal_page =
 	{
@@ -132,13 +113,11 @@ void PORTD_IRQHandler()
 	{
 		onpress_U();
 	}
-	else if ((gpio_get(KEY_PTxn[4]) == KEY_DOWN && flag & (1 << 7)) && IMG_MODE == lcd_mode) //如果是flash按键按下,且是在图像模式下
-	{
-		save_picture = 1; //如果flash写入图像信息的键按下，标志位置1
-	}
+	// else if ((gpio_get(KEY_PTxn[4]) == KEY_DOWN && flag & (1 << 7)) && IMG_MODE == lcd_mode) //如果是flash按键按下,且是在图像模式下
+	// {
+	// 	save_picture = 1; //如果flash写入图像信息的键按下，标志位置1
+	// }
 	key_on = 1; //记录有按键按下
-		//led_turn(LED1);
-		//disable_irq(PORTD_IRQn); //消抖
 }
 
 /*结构体的元素个数存放在colour[MAX_OPTION - 1]中 
@@ -199,9 +178,8 @@ void UI_INIT()
 /*-----------------新增功能的函数-----------------*/
 Lcd_State *quit_Lcd(Lcd_State *pThis) //退出lcd模式
 {
-	page = 1;
-	current_row = 0;
-	lcd_mode = IMG_MODE;
+	// page = 1;
+	// current_row = 0;
 	please_clear = 1;
 	openCamera();
 	return &imgbuff_show;
@@ -211,14 +189,9 @@ Lcd_State *goto_Begin(Lcd_State *pThis) //从等待模式进入本页第一行
 {
 	current_row = 1;
 	colour[6 * (page - 1) + current_row - 1] = GREEN; //选中的行变成绿色
-	// if (1 == page)
-	// 	return &wait_begin;
-	// else
-	// 	return &normal_page;
 	return &normal_page;
 }
 
-//new
 Lcd_State *goto_End(Lcd_State *pThis) //从等待模式进入本页最后一行
 {
 	if ((colour[MAX_OPTION - 1] / 300) < (page * 6))
@@ -258,31 +231,20 @@ Lcd_State *ignore_Oprate(Lcd_State *pThis)
 
 Lcd_State *goto_Set(Lcd_State *pThis)
 {
-	if (GREEN == colour[6 * (page - 1) + current_row - 1])
-		colour[6 * (page - 1) + current_row - 1] = RED;
+	int tempId = 6 * (page - 1) + current_row - 1;
+	if (GREEN == colour[tempId])
+		colour[tempId] = RED;
 	else
-		colour[6 * (page - 1) + current_row - 1] = GREEN;
+		colour[tempId] = GREEN;
 	return pThis;
-}
-
-Lcd_State *goto_Wait(Lcd_State *pThis)
-{
-	if (GREEN == colour[6 * (page - 1) + current_row - 1]) //在未选中的情况下才运行
-	{
-		colour[6 * (page - 1) + current_row - 1] = WHITE;
-		return &wait_middle;
-	}
-	else
-		return pThis;
 }
 
 Lcd_State *goto_next(Lcd_State *pThis)
 {
-
-	if (GREEN == colour[6 * (page - 1) + current_row - 1])
+	int tempId = 6 * (page - 1) + current_row - 1;
+	if (GREEN == colour[tempId])
 	{
-		colour[6 * (page - 1) + current_row - 1] = WHITE;
-
+		colour[tempId] = WHITE;
 		if (!(current_row == 6 || (page - 1) * 6 + current_row == colour[MAX_OPTION - 1] / 300)) //如果不是最后一行
 		{
 			current_row++;
@@ -298,29 +260,6 @@ Lcd_State *goto_next(Lcd_State *pThis)
 		}
 		colour[6 * (page - 1) + current_row - 1] = GREEN;
 		return pThis;
-
-		// 	if (1 == colour[MAX_OPTION - 1] / 300 ||
-		// 		6 * (page - 1) + current_row - 1 == ((colour[MAX_OPTION - 1] / 300) - 1)) //如果只有一个数据要处理或者当前页面只有一行
-		// 	{
-		// 		return &wait_middle;
-		// 	}
-		// 	if (6 * (page - 1) + current_row - 1 == ((colour[MAX_OPTION - 1] / 300) - 2)) //如果再往下一行就是最后一行
-		// 	{
-		// 		i = 1;
-		// 	}
-		// 	if (6 == current_row)
-		// 	{
-		// 		page++;
-		// 		current_row = 1;
-		// 	}
-		// 	else
-		// 		current_row++;
-		// 	colour[6 * (page - 1) + current_row - 1] = GREEN;
-		// 	// if (1 == i)
-		// 	// 	return &wait_end;
-		// 	// else
-		// 	// 	return &normal_page;
-		// 	return &normal_page;
 	}
 	else
 		return pThis;
@@ -328,8 +267,6 @@ Lcd_State *goto_next(Lcd_State *pThis)
 
 Lcd_State *goto_Before(Lcd_State *pThis)
 {
-	int i = 0;
-
 	if (GREEN == colour[6 * (page - 1) + current_row - 1]) //只有在未选中的情况下才进行操作
 	{
 		colour[6 * (page - 1) + current_row - 1] = WHITE; //将原来选项的背景色变白
@@ -348,28 +285,6 @@ Lcd_State *goto_Before(Lcd_State *pThis)
 		}
 		colour[6 * (page - 1) + current_row - 1] = GREEN;
 		return pThis;
-
-		// if (1 == colour[MAX_OPTION - 1] / 300 || 6 * (page - 1) + current_row - 1 == 0)
-		// {
-		// 	return &wait_middle;
-		// }
-		// if (6 * (page - 1) + current_row - 1 == 1)
-		// {
-		// 	i = 1;
-		// }
-		// if (1 == current_row)
-		// {
-		// 	page--;
-		// 	current_row = 6;
-		// }
-		// else
-		// 	current_row--;
-		// colour[6 * (page - 1) + current_row - 1] = GREEN;
-		// if (1 == i)
-		// 	return &wait_begin;
-		// else
-		// 	return &normal_page;
-		//return &normal_page;
 	}
 	else
 		return pThis;
@@ -378,25 +293,25 @@ Lcd_State *goto_Before(Lcd_State *pThis)
 /*如果在选中模式则改变数据，如果没有选中则进入等待模式*/
 Lcd_State *data_Down(Lcd_State *pThis)
 {
-	if (RED == colour[6 * (page - 1) + current_row - 1])
+	int tempId = 6 * (page - 1) + current_row - 1;
+	if (RED == colour[tempId])
 	{
-		if (screen_data[6 * (page - 1) + current_row - 1].icrement == 99)
+		if (screen_data[tempId].icrement == 99)
 		{
-			*(screen_data[6 * (page - 1) + current_row - 1].data_value) *= -1;
+			*(screen_data[tempId].data_value) *= -1;
 		}
 		else
 		{
-			*(screen_data[6 * (page - 1) + current_row - 1].data_value) -= screen_data[6 * (page - 1) + current_row - 1].icrement;
+			*(screen_data[tempId].data_value) -= screen_data[tempId].icrement;
 		}
-
-		if (screen_data[6 * (page - 1) + current_row - 1].ip == -1) //写flash操作
+		if (screen_data[tempId].ip == -1) //写flash操作
 		{
 			flash_In();
 		}
 	}
 	else
 	{
-		colour[6 * (page - 1) + current_row - 1] = WHITE;
+		colour[tempId] = WHITE;
 		current_row = 0;
 		return &wait_middle;
 	}
@@ -405,24 +320,25 @@ Lcd_State *data_Down(Lcd_State *pThis)
 
 Lcd_State *data_Up(Lcd_State *pThis)
 {
-	if (RED == colour[6 * (page - 1) + current_row - 1])
+	int tempId = 6 * (page - 1) + current_row - 1;
+	if (RED == colour[tempId])
 	{
-		if (screen_data[6 * (page - 1) + current_row - 1].icrement == 99)
+		if (screen_data[tempId].icrement == 99)
 		{
-			*(screen_data[6 * (page - 1) + current_row - 1].data_value) *= -1;
+			*(screen_data[tempId].data_value) *= -1;
 		}
 		else
 		{
-			*(screen_data[6 * (page - 1) + current_row - 1].data_value) += screen_data[6 * (page - 1) + current_row - 1].icrement;
+			*(screen_data[tempId].data_value) += screen_data[tempId].icrement;
 		}
-		if (screen_data[6 * (page - 1) + current_row - 1].ip == -1) //写flash操作
+		if (screen_data[tempId].ip == -1) //写flash操作
 		{
 			flash_In();
 		}
 	}
 	else
 	{
-		colour[6 * (page - 1) + current_row - 1] = WHITE;
+		colour[tempId] = WHITE;
 		current_row = 0;
 		return &wait_middle;
 	}
@@ -432,9 +348,8 @@ Lcd_State *data_Up(Lcd_State *pThis)
 Lcd_State *quit_show(Lcd_State *pThis)
 {
 	please_clear = 1;
-	page = 1;
-	current_row = 0;
-	lcd_mode = UI_MODE;
+	// page = 1;
+	// current_row = 0;
 	closeCamera();
 	return &wait_middle;
 }

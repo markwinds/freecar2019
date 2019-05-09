@@ -11,8 +11,6 @@ void waitToDo()
     }
     /*更新UI*/
     if (1 == key_on && (p_current_state == &wait_middle ||
-                        p_current_state == &wait_begin ||
-                        p_current_state == &wait_end ||
                         p_current_state == &normal_page))
     {
         updateUI();
