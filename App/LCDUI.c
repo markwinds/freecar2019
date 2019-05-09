@@ -137,8 +137,8 @@ void PORTD_IRQHandler()
 		save_picture = 1; //如果flash写入图像信息的键按下，标志位置1
 	}
 	key_on = 1; //记录有按键按下
-				//led_turn(LED1);
-				//disable_irq(PORTD_IRQn); //消抖
+		//led_turn(LED1);
+		//disable_irq(PORTD_IRQn); //消抖
 }
 
 /*结构体的元素个数存放在colour[MAX_OPTION - 1]中 
@@ -211,10 +211,11 @@ Lcd_State *goto_Begin(Lcd_State *pThis) //从等待模式进入本页第一行
 {
 	current_row = 1;
 	colour[6 * (page - 1) + current_row - 1] = GREEN; //选中的行变成绿色
-	if (1 == page)
-		return &wait_begin;
-	else
-		return &normal_page;
+	// if (1 == page)
+	// 	return &wait_begin;
+	// else
+	// 	return &normal_page;
+	return &normal_page;
 }
 
 //new
@@ -277,32 +278,49 @@ Lcd_State *goto_Wait(Lcd_State *pThis)
 
 Lcd_State *goto_next(Lcd_State *pThis)
 {
-	int i = 0;
 
 	if (GREEN == colour[6 * (page - 1) + current_row - 1])
 	{
 		colour[6 * (page - 1) + current_row - 1] = WHITE;
-		if (1 == colour[MAX_OPTION - 1] / 300 ||
-			6 * (page - 1) + current_row - 1 == ((colour[MAX_OPTION - 1] / 300) - 1)) //如果只有一个数据要处理或者当前页面只有一行
+
+		if (!(current_row == 6 || (page - 1) * 6 + current_row == colour[MAX_OPTION - 1] / 300)) //如果不是最后一行
+		{
+			current_row++;
+		}
+		else if (page != colour[MAX_OPTION - 1] / 300 / 6 + 1) //不是最后一页
+		{
+			current_row = 1;
+			page++;
+		}
+		else
 		{
 			return &wait_middle;
 		}
-		if (6 * (page - 1) + current_row - 1 == ((colour[MAX_OPTION - 1] / 300) - 2)) //如果再往下一行就是最后一行
-		{
-			i = 1;
-		}
-		if (6 == current_row)
-		{
-			page++;
-			current_row = 1;
-		}
-		else
-			current_row++;
 		colour[6 * (page - 1) + current_row - 1] = GREEN;
-		if (1 == i)
-			return &wait_end;
-		else
-			return &normal_page;
+		return pThis;
+
+		// 	if (1 == colour[MAX_OPTION - 1] / 300 ||
+		// 		6 * (page - 1) + current_row - 1 == ((colour[MAX_OPTION - 1] / 300) - 1)) //如果只有一个数据要处理或者当前页面只有一行
+		// 	{
+		// 		return &wait_middle;
+		// 	}
+		// 	if (6 * (page - 1) + current_row - 1 == ((colour[MAX_OPTION - 1] / 300) - 2)) //如果再往下一行就是最后一行
+		// 	{
+		// 		i = 1;
+		// 	}
+		// 	if (6 == current_row)
+		// 	{
+		// 		page++;
+		// 		current_row = 1;
+		// 	}
+		// 	else
+		// 		current_row++;
+		// 	colour[6 * (page - 1) + current_row - 1] = GREEN;
+		// 	// if (1 == i)
+		// 	// 	return &wait_end;
+		// 	// else
+		// 	// 	return &normal_page;
+		// 	return &normal_page;
 	}
 	else
 		return pThis;
@@ -312,29 +330,46 @@ Lcd_State *goto_Before(Lcd_State *pThis)
 {
 	int i = 0;
 
-	if (GREEN == colour[6 * (page - 1) + current_row - 1])
+	if (GREEN == colour[6 * (page - 1) + current_row - 1]) //只有在未选中的情况下才进行操作
 	{
-		colour[6 * (page - 1) + current_row - 1] = WHITE;
-		if (1 == colour[MAX_OPTION - 1] / 300 || 6 * (page - 1) + current_row - 1 == 0)
+		colour[6 * (page - 1) + current_row - 1] = WHITE; //将原来选项的背景色变白
+		if (current_row != 1)
 		{
-			return &wait_middle;
+			current_row--;
 		}
-		if (6 * (page - 1) + current_row - 1 == 1)
-		{
-			i = 1;
-		}
-		if (1 == current_row)
+		else if (page > 1) //如果不是第一页，是第一行
 		{
 			page--;
 			current_row = 6;
 		}
-		else
-			current_row--;
+		else //是第一页第一行
+		{
+			return &wait_middle;
+		}
 		colour[6 * (page - 1) + current_row - 1] = GREEN;
-		if (1 == i)
-			return &wait_begin;
-		else
-			return &normal_page;
+		return pThis;
+
+		// if (1 == colour[MAX_OPTION - 1] / 300 || 6 * (page - 1) + current_row - 1 == 0)
+		// {
+		// 	return &wait_middle;
+		// }
+		// if (6 * (page - 1) + current_row - 1 == 1)
+		// {
+		// 	i = 1;
+		// }
+		// if (1 == current_row)
+		// {
+		// 	page--;
+		// 	current_row = 6;
+		// }
+		// else
+		// 	current_row--;
+		// colour[6 * (page - 1) + current_row - 1] = GREEN;
+		// if (1 == i)
+		// 	return &wait_begin;
+		// else
+		// 	return &normal_page;
+		//return &normal_page;
 	}
 	else
 		return pThis;
