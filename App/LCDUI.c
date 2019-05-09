@@ -13,6 +13,7 @@ uint8 key_on = 0;
 uint8 is_show_va = 0;
 uint8 is_show_line = 0;
 uint8 please_clear = 0;
+uint8 save_picture = 0;
 float motor_go = 10;	//在显示状态下控制电机是否转动的变量
 int colour[MAX_OPTION]; //0元素也保存有有效数据
 Site_t tem_site_str[] = {0, 0, 0, 20, 0, 40, 0, 60, 0, 80, 0, 100};
@@ -22,23 +23,49 @@ int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
 float flash_in = 0;  //是否写入flash
 
+float zbt = 0;
+
+Screen_Data screen_data[] = {
+	{"M_KP", &(zbt), 1, 1},
+	{"M_KI", &(zbt), 1, 2},
+	{"M_KD", &(zbt), 1, 3},
+
+	{"enM", &(zbt), 1, 0}, //使能电机
+	{"speed", &(zbt), 1, 4},
+
+	{"length", &(zbt), 1, 0},
+
+	{"flash", &(zbt), 1, -1},
+	{"de_pic", &(zbt), 1, 0},
+	{"se_pic", &(zbt), 1, 0},
+
+	{"S_KP", &(zbt), 1, 5},
+	{"S_KD", &(zbt), 1, 6},
+
+	{"end", &(zbt), 1202, 0}
+
+};
+
 /*----------各种状态下对应的5个建的操作--------*/
+/*光标停留在屏幕外，此时为等待模式*/
 Lcd_State wait_middle =
 	{
 		quit_Lcd,   //中 退出lcd,显示图像
 		goto_End,   //上 去最下面
 		goto_Begin, //下 去最上面
-		turn_Front, //左
-		turn_Back   //右
+		turn_Front, //左 向前翻页
+		turn_Back   //右 向后翻页
 };
+/*光标停留在本页的第一行*/
 Lcd_State wait_begin =
 	{
 		goto_Set,  //中 选中
-		goto_Wait, //上 放选
+		goto_Wait, //上 放选，进入到等待模式
 		goto_next, //下 下一个
-		data_Down, //左
+		data_Down, //左	改函数不一定改变数据，如果没有选中数据则会跳转到等待模式
 		data_Up	//右
 };
+/*光标停留在本页的最后一行*/
 Lcd_State wait_end =
 	{
 		goto_Set,	//中
@@ -83,7 +110,7 @@ void PORTD_IRQHandler()
 	flag = PORTD_ISFR;
 	PORTD_ISFR = ~0; //清中断标志位
 
-	DELAY_MS(20);
+	DELAY_MS(10);
 
 	if (gpio_get(KEY_PTxn[5]) == KEY_DOWN && flag & (1 << 13)) //中键按下
 	{
@@ -91,11 +118,11 @@ void PORTD_IRQHandler()
 	}
 	else if (gpio_get(KEY_PTxn[0]) == KEY_DOWN && flag & (1 << 10))
 	{
-		onpress_L();
+		onpress_R();
 	}
 	else if (gpio_get(KEY_PTxn[1]) == KEY_DOWN && flag & (1 << 14))
 	{
-		onpress_R();
+		onpress_L();
 	}
 	else if (gpio_get(KEY_PTxn[2]) == KEY_DOWN && flag & (1 << 11))
 	{
@@ -109,13 +136,14 @@ void PORTD_IRQHandler()
 	{
 		save_picture = 1; //如果flash写入图像信息的键按下，标志位置1
 	}
-	key_on = 1;				 //记录有按键按下
-	disable_irq(PORTD_IRQn); //消抖
+	key_on = 1; //记录有按键按下
+				//led_turn(LED1);
+				//disable_irq(PORTD_IRQn); //消抖
 }
 
 /*结构体的元素个数存放在colour[MAX_OPTION - 1]中 
 消抖时间控制在最后几行*/
-void Open_UI()
+void updateUI()
 {
 	int i = 0;
 	int m = 0;
@@ -127,30 +155,25 @@ void Open_UI()
 			break;
 	}
 	colour[MAX_OPTION - 1] = 300 * n; //记录要处理的数据个数
-	if (1 == key_on)				  //有按键按下才刷新
+
+	m = 6 * (page - 1);
+	LCD_clear(WHITE); //清屏防止上次留下残影
+	for (i = 0; i < 6; i++)
 	{
-		m = 6 * (page - 1);
-		LCD_clear(WHITE); //清屏防止上次留下残影
-		for (i = 0; i < 6; i++)
+		if (m + i >= n)
 		{
-			if (m + i >= n)
-			{
-				break;
-			}
-			if (99 == screen_data[m + i].icrement)
-			{
-				LCD_str(tem_site_str[i], screen_data[m + i].data_name, BLACK, colour[m + i]); //记得回来改颜色
-				LCD_str(tem_site_data[i], (*(screen_data[m + i].data_value) < 0) ? "ON" : "OFF", BLACK, WHITE);
-			}
-			else
-			{
-				LCD_str(tem_site_str[i], screen_data[m + i].data_name, BLACK, colour[m + i]); //记得回来改颜色
-				LCD_numf(tem_site_data[i], (float)(*(screen_data[m + i].data_value)), BLACK, WHITE);
-			}
+			break;
 		}
-		key_on = 0;
-		DELAY_MS(200); //消抖
-		enable_irq(PORTD_IRQn);
+		if (99 == screen_data[m + i].icrement)
+		{
+			LCD_str(tem_site_str[i], screen_data[m + i].data_name, BLACK, colour[m + i]); //记得回来改颜色
+			LCD_str(tem_site_data[i], (*(screen_data[m + i].data_value) < 0) ? "ON" : "OFF", BLACK, WHITE);
+		}
+		else
+		{
+			LCD_str(tem_site_str[i], screen_data[m + i].data_name, BLACK, colour[m + i]); //记得回来改颜色
+			LCD_numf(tem_site_data[i], (float)(*(screen_data[m + i].data_value)), BLACK, WHITE);
+		}
 	}
 }
 
@@ -170,6 +193,7 @@ void UI_INIT()
 	port_init(PTD10, ALT1 | IRQ_FALLING | PULLUP); //上
 	port_init(PTD7, ALT1 | IRQ_FALLING | PULLUP);  //flash按键
 	enable_irq(PORTD_IRQn);						   //使能d对应的端口也就是按键的port
+	set_vector_handler(PORTD_VECTORn, PORTD_IRQHandler);
 }
 
 /*-----------------新增功能的函数-----------------*/
@@ -179,6 +203,7 @@ Lcd_State *quit_Lcd(Lcd_State *pThis) //退出lcd模式
 	current_row = 0;
 	lcd_mode = IMG_MODE;
 	please_clear = 1;
+	openCamera();
 	return &imgbuff_show;
 }
 
@@ -315,6 +340,7 @@ Lcd_State *goto_Before(Lcd_State *pThis)
 		return pThis;
 }
 
+/*如果在选中模式则改变数据，如果没有选中则进入等待模式*/
 Lcd_State *data_Down(Lcd_State *pThis)
 {
 	if (RED == colour[6 * (page - 1) + current_row - 1])
@@ -374,6 +400,7 @@ Lcd_State *quit_show(Lcd_State *pThis)
 	page = 1;
 	current_row = 0;
 	lcd_mode = UI_MODE;
+	closeCamera();
 	return &wait_middle;
 }
 
@@ -405,52 +432,53 @@ Lcd_State *do_nothing(Lcd_State *pThis)
 
 Lcd_State *go_Picture(Lcd_State *pThis)
 {
-	lcd_mode = PICTURE_MODE;
-	flash_picture[1] = 0;
-	flash_picture[0] = SECTOR_NUM - 1;
-	please_clear = 1;
-	if (1 == read_all_picture)
-	{
-		picture_choose = 11;
-	}
+	// lcd_mode = PICTURE_MODE;
+	// flash_picture[1] = 0;
+	// flash_picture[0] = SECTOR_NUM - 1;
+	// please_clear = 1;
+	// if (1 == read_all_picture)
+	// {
+	// 	picture_choose = 11;
+	// }
 	return &read_picture;
 }
 
 Lcd_State *read_Picture(Lcd_State *pThis)
 {
-	if (10 == picture_choose_before)
-		picture_choose = 2;
-	else
-		picture_choose = 10;
+	// if (10 == picture_choose_before)
+	// 	picture_choose = 2;
+	// else
+	// 	picture_choose = 10;
 	return pThis;
 }
 
 Lcd_State *go_Back(Lcd_State *pThis)
 {
-	lcd_mode = IMG_MODE;
-	picture_choose = 0;
-	picture_count = 1;
-	flash_picture[1] = 0;
-	flash_picture[0] = SECTOR_NUM - 1;
-	please_clear = 1;
+	// lcd_mode = IMG_MODE;
+	// picture_choose = 0;
+	// picture_count = 1;
+	// flash_picture[1] = 0;
+	// flash_picture[0] = SECTOR_NUM - 1;
+	// please_clear = 1;
+	openCamera();
 	return &imgbuff_show;
 }
 
 Lcd_State *read_Array(Lcd_State *pThis) //读数组
 {
-	picture_choose = 4;
+	//picture_choose = 4;
 	return pThis;
 }
 
 Lcd_State *read_Before(Lcd_State *pThis) //前一幅图片
 {
-	picture_choose = 1;
+	//picture_choose = 1;
 	return pThis;
 }
 
 Lcd_State *read_After(Lcd_State *pThis)
 {
-	picture_choose = 3;
+	//picture_choose = 3;
 	return pThis;
 }
 

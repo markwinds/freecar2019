@@ -93,7 +93,7 @@ Lcd_State *read_After(Lcd_State *pThis);
 /*普通函数*/
 void PORTD_IRQHandler();
 void UI_INIT();
-void Open_UI();
+void updateUI();
 extern void flash_In();
 extern void flash_Out();
 

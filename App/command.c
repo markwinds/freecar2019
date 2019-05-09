@@ -3,6 +3,37 @@
 
 void analysisCommand1(char *argv[])
 {
+    // if (!strcmp("pp", argv[0]))
+    // {
+    //     if (p_current_state == &wait_middle)
+    //     {
+    //         printf("wait_middle");
+    //     }
+    //     else if (p_current_state == &wait_begin)
+    //     {
+    //         printf("wait_begin");
+    //     }
+    //     else if (p_current_state == &wait_end)
+    //     {
+    //         printf("wait_end");
+    //     }
+    //     else if (p_current_state == &normal_page)
+    //     {
+    //         printf("normal_page");
+    //     }
+    //     else if (p_current_state == &imgbuff_show)
+    //     {
+    //         printf("imgbuff_show");
+    //     }
+    //     else if (p_current_state == &read_picture)
+    //     {
+    //         printf("read_picture");
+    //     }
+    //     else
+    //     {
+    //         printf("fuck you");
+    //     }
+    // }
 }
 
 void analysisCommand2(char *argv[])
