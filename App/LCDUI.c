@@ -65,19 +65,26 @@ Lcd_State normal_page =
 };
 Lcd_State imgbuff_show =
 	{
-		quit_show,  //中
-		open_va,	//上
-		go_Picture, //下
-		show_line,  //左
-		ushow_line  //右
+		quit_show, //中
+		//open_va,	//上 清屏
+		goShowDealedPicture, //重写上键的功能 进入显示
+		go_Picture,			 //下
+		//show_line,  //左
+		flashPicture, //左
+		ushow_line	//右
 };
 Lcd_State read_picture =
 	{
-		read_Picture, //中
+		read_Picture, //中	发送当前的图片
 		go_Back,	  //上
 		read_Array,   //下
 		read_Before,  //左
 		read_After	//右
+};
+//显示处理过的图像
+Lcd_State show_dealed_picture =
+	{
+
 };
 
 Lcd_State *p_current_state = &imgbuff_show;
@@ -113,9 +120,9 @@ void PORTD_IRQHandler()
 	{
 		onpress_U();
 	}
-	// else if ((gpio_get(KEY_PTxn[4]) == KEY_DOWN && flag & (1 << 7)) && IMG_MODE == lcd_mode) //如果是flash按键按下,且是在图像模式下
+	// else if ((gpio_get(KEY_PTxn[4]) == KEY_DOWN && flag & (1 << 7)) && p_current_state == &imgbuff_show)
 	// {
-	// 	save_picture = 1; //如果flash写入图像信息的键按下，标志位置1
+	// 	flash_Picture();
 	// }
 	key_on = 1; //记录有按键按下
 }
@@ -432,6 +439,17 @@ Lcd_State *read_After(Lcd_State *pThis)
 	return pThis;
 }
 
+Lcd_State *goShowDealedPicture(Lcd_State *pThis)
+{
+	return &show_dealed_picture;
+}
+
+Lcd_State *flashPicture(Lcd_State *pThis)
+{
+	flash_Picture();
+	return pThis;
+}
+
 /*中断调用的函数*/
 void onpress_M()
 {
@@ -459,33 +477,33 @@ void onpress_R()
 }
 
 /*flash操作函数*/
-void flash_In() //将数据写入flash
-{
-	int i = 0;
+// void flash_In() //将数据写入flash
+// {
+// 	int i = 0;
 
-	flash_erase_sector(SECTOR_NUM); //擦除扇区,擦一次只能写一次
-	while (strcmp(screen_data[i].data_name, "end") != 0)
-	{
-		if (screen_data[i].ip > 0)
-		{
-			flash_write(SECTOR_NUM, screen_data[i].ip * 4, (uint32)((*(screen_data[i].data_value)) * 100.0 + 0.5)); //四舍五入写入，防止float精度不够
-		}
-		i++;
-	}
-}
+// 	flash_erase_sector(SECTOR_NUM); //擦除扇区,擦一次只能写一次
+// 	while (strcmp(screen_data[i].data_name, "end") != 0)
+// 	{
+// 		if (screen_data[i].ip > 0)
+// 		{
+// 			flash_write(SECTOR_NUM, screen_data[i].ip * 4, (uint32)((*(screen_data[i].data_value)) * 100.0 + 0.5)); //四舍五入写入，防止float精度不够
+// 		}
+// 		i++;
+// 	}
+// }
 
-void flash_Out()
-{
-	int i = 0;
-	uint32 data = 0;
+// void flash_Out()
+// {
+// 	int i = 0;
+// 	uint32 data = 0;
 
-	while (strcmp(screen_data[i].data_name, "end") != 0)
-	{
-		if (screen_data[i].ip > 0)
-		{
-			data = flash_read(SECTOR_NUM, screen_data[i].ip * 4, uint32);
-			*(screen_data[i].data_value) = (float)((double)data / 100.0);
-		}
-		i++;
-	}
-}
+// 	while (strcmp(screen_data[i].data_name, "end") != 0)
+// 	{
+// 		if (screen_data[i].ip > 0)
+// 		{
+// 			data = flash_read(SECTOR_NUM, screen_data[i].ip * 4, uint32);
+// 			*(screen_data[i].data_value) = (float)((double)data / 100.0);
+// 		}
+// 		i++;
+// 	}
+// }
