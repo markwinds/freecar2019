@@ -1,6 +1,8 @@
 #include "common.h"
 #include "include.h"
 
+uint8 sobelAns[CAMERA_SIZE * 8]; //存储边缘检测的结果，是边缘则为1，不是边缘为0
+
 /*
 在区间[0,a/s)找到第一个x*x>=a的数
 如果不存在则返回a/2
@@ -72,6 +74,38 @@ void filter(uint8 *ans, uint8 *src)
                          src[i][j - 1] + src[i][j] + src[i][j + 1] +
                          src[i + 1][j - 1] + src[i + 1][j] + src[i + 1][j + 1]) /
                         5;
+        }
+    }
+}
+
+/*
+sobel算子边缘检测
+*/
+void sobel(uint8 *src)
+{
+    int tempX; //x轴方向的导数
+    int tempY; //y轴方向的导数
+    for (uint8 j = 0; j < 80; j++)
+    {
+        sobelAns[0][j] = 0;
+        sobelAns[59][j] = 0;
+    }
+    for (uint8 i = 0; i < 60; i++)
+    {
+        sobelAns[i][0] = 0;
+        sobelAns[i][79] = 0;
+    }
+    for (uint8 i = 1; i < 59; i++)
+    {
+        for (uint8 j = 1; j < 79; j++)
+        {
+            tempX = src[i - 1][j + 1] + 2 * src[i][j + 1] + src[i + 1][j + 1] - (src[i - 1][j - 1] + 2 * src[i][j - 1] + src[i + 1][j - 1]);
+            tempY = src[i - 1][j - 1] + 2 * src[i - 1][j] + src[i - 1][j + 1] - (src[i + 1][j - 1] + 2 * src[i + 1][j] + src[i + 1][j + 1]);
+            int ans = tempX * tempX + tempY * tempY;
+            if (ans > EDGE_CRITICAL_VALUE)
+                sobelAns[i][j] = 1; //超过阈值，则判定为边缘
+            else
+                sobelAns[i][j] = 0;
         }
     }
 }

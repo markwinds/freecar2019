@@ -14,6 +14,6 @@ void waitToDo()
                         p_current_state == &normal_page))
     {
         updateUI();
+        key_on = 0;
     }
-    key_on = 0;
 }
