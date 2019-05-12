@@ -31,7 +31,8 @@
 enum Displayer
 {
     LCD,
-    UART
+    UART,
+    buff
 };
 
 extern int picture_num; //存储图片的数量
@@ -43,5 +44,9 @@ extern void nextPictureID();
 extern void beforePictureID();
 extern void writeParameterToFlash();
 extern void readParameterFromFlash();
+extern void deleteAllPicture();
+extern void showFilterPicture();
+extern void showSobelPicture();
+extern void initFlashs();
 
 #endif

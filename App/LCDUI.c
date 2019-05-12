@@ -265,6 +265,40 @@ Lcd_State *savePicture(Lcd_State *pThis)
 	return pThis;
 }
 
+Lcd_State *goShowDealedPicture(Lcd_State *pThis)
+{
+	if (picture_num)
+	{
+		closeCamera();
+		LCD_clear(WHITE);
+		readPictureToLCDDefault();
+		return &show_dealed_picture;
+	}
+	else
+	{
+		return pThis;
+	}
+}
+
+Lcd_State *showDealedPictureToImgbuffShow(Lcd_State *pThis)
+{
+	LCD_clear(WHITE);
+	openCamera();
+	return &imgbuff_show;
+}
+
+Lcd_State *showFilterPictures(Lcd_State *pThis)
+{
+	showFilterPicture();
+	return pThis;
+}
+
+Lcd_State *showSobelPictures(Lcd_State *pThis)
+{
+	showSobelPicture();
+	return pThis;
+}
+
 /*中断调用的函数*/
 void onpress_M()
 {
@@ -414,7 +448,7 @@ void UI_INIT()
 	port_init(PTD7, ALT1 | IRQ_FALLING | PULLUP);  //flash按键
 	enable_irq(PORTD_IRQn);						   //使能d对应的端口也就是按键的port
 	set_vector_handler(PORTD_VECTORn, PORTD_IRQHandler);
-	readParameterFromFlash();
+	initFlashs();
 }
 
 /*----------各种状态下对应的5个建的操作--------*/
@@ -437,11 +471,11 @@ Lcd_State normal_page =
 };
 Lcd_State imgbuff_show =
 	{
-		quit_show,  //中
-		doNothing,  //上 进入显示
-		go_Picture, //下
-		takePhoto,  //左
-		doNothing   //右
+		quit_show,			 //中
+		goShowDealedPicture, //上 进入显示
+		go_Picture,			 //下
+		takePhoto,			 //左
+		doNothing			 //右
 };
 Lcd_State read_picture =
 	{
@@ -454,9 +488,9 @@ Lcd_State read_picture =
 //显示处理过的图像
 Lcd_State show_dealed_picture =
 	{
-		doNothing, //中
-		doNothing, //上
-		doNothing, //下
-		doNothing, //左
-		doNothing  //右
+		showFilterPictures,				//中
+		showSobelPictures,				//上
+		showDealedPictureToImgbuffShow, //下
+		readBeforePicture,				//左
+		readNextPicture					//右
 };

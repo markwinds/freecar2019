@@ -7,6 +7,7 @@ int picture_num = 0;	  //存储图片的数量
 int picture_now_id = 0;   //当前的图片id,id从0开始
 int picture_write_id = 0; //写入图片时，为图片分配的id,与picture_num一起被写入flash
 uint8 flash_imgbuff[CAMERA_SIZE];
+uint8 flash_img[CAMERA_SIZE * 8];
 
 /*
 利用图片的ID找到扇区id和offset的值
@@ -32,6 +33,22 @@ void UARTSendPicture(uint8 *src)
 				printf("0");
 			else
 				printf("1");
+		}
+		printf("\n");
+	}
+	printf("\n\n\n\n");
+	for (int i = 0; i < 60; i++)
+	{
+		if (i % 10 == 0)
+			printf("\n");
+		for (int j = 0; j < 80; j++)
+		{
+			if (*(p++) == 0)
+				printf("0");
+			else
+				printf("1");
+			if (j % 10 == 0)
+				printf(" ");
 		}
 		printf("\n");
 	}
@@ -112,6 +129,9 @@ void readPictureToDisplayer(int picture_id, enum Displayer displayer)
 	{
 		UARTSendPicture(flash_imgbuff);
 	}
+	else if (displayer == buff)
+	{
+	}
 }
 
 void nextPictureID()
@@ -137,4 +157,77 @@ void readParameterFromFlash()
 	picture_num = (int)flash_read(SECTOR_FOR_PICTURE_COUNT, 0 * PICTURE_NUM_PER_SECTOR * 2, FLASH_WRITE_TYPE);
 	picture_write_id = (int)flash_read(SECTOR_FOR_PICTURE_COUNT, 1 * PICTURE_NUM_PER_SECTOR * 2, FLASH_WRITE_TYPE);
 	picture_now_id = (int)flash_read(SECTOR_FOR_PICTURE_COUNT, 2 * PICTURE_NUM_PER_SECTOR * 2, FLASH_WRITE_TYPE);
+}
+
+void deleteAllPicture()
+{
+	picture_num = 0;
+	picture_now_id = 0;
+	picture_write_id = 0;
+	writeParameterToFlash();
+}
+
+void showFilterPicture()
+{
+	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
+	filter(img, flash_img);
+	img_compress(img, flash_imgbuff, CAMERA_SIZE);
+	LCDShowPicture(flash_imgbuff);
+}
+
+void showSobelPicture()
+{
+	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
+	sobel(flash_img);
+	img_compress(sobelAns, flash_imgbuff, CAMERA_SIZE);
+	LCDShowPicture(flash_imgbuff);
+}
+
+void writeBuffToFlash(int location_id)
+{
+	updateIDFromPictureID(location_id);
+	if (0 == sector_offset)
+		flash_erase_sector(sector_id);
+	int write_num = 300 / PICTURE_NUM_PER_SECTOR; //一张图片需要写几次
+	for (int i = 0; i < write_num; i++)			  //写入图片数据
+	{
+		FLASH_WRITE_TYPE data;
+#if defined(MK60DZ10)
+		data = ((uint32)flash_imgbuff[4 * i] << 24) +
+			   ((uint32)flash_imgbuff[4 * i + 1] << 16) +
+			   ((uint32)flash_imgbuff[4 * i + 2] << 8) +
+			   ((uint32)flash_imgbuff[4 * i + 3]);
+		flash_write(sector_id, sector_offset * 4, data);
+#elif defined(MK60F15)
+		data = ((uint64)flash_imgbuff[8 * i] << 56) +
+			   ((uint64)flash_imgbuff[8 * i + 1] << 48) +
+			   ((uint64)flash_imgbuff[8 * i + 2] << 40) +
+			   ((uint64)flash_imgbuff[8 * i + 3] << 32) +
+			   ((uint64)flash_imgbuff[8 * i + 4] << 24) +
+			   ((uint64)flash_imgbuff[8 * i + 5] << 16) +
+			   ((uint64)flash_imgbuff[8 * i + 6] << 8) +
+			   ((uint64)flash_imgbuff[8 * i + 7]);
+		flash_write(sector_id, sector_offset * 8, data);
+#endif
+		sector_offset++;
+	}
+}
+
+void initFlashs()
+{
+	readParameterFromFlash();
+	int reflash_num = picture_write_id % PICTURE_NUM_PER_SECTOR;
+	if (reflash_num)
+	{
+		for (int i = 0; i < reflash_num; i++)
+		{
+			readPictureToDisplayer(picture_write_id - reflash_num + i, buff);
+			writeBuffToFlash(picture_write_id - reflash_num + i + 4);
+		}
+		for (int i = 0; i < reflash_num; i++)
+		{
+			readPictureToDisplayer(picture_write_id - reflash_num + i + 4, buff);
+			writeBuffToFlash(picture_write_id - reflash_num + i);
+		}
+	}
 }

@@ -57,23 +57,36 @@ void filter(uint8 *ans, uint8 *src)
 {
     for (uint8 i = 0; i < 80; i++)
     {
-        ans[0][i] = src[0][i];
-        ans[59][i] = src[59][i];
+        ans(0, i) = src(0, i);
+        ans(59, i) = src(59, i);
     }
     for (uint8 i = 0; i < 60; i++)
     {
-        ans[i][0] = src[i][0];
-        ans[i][79] = src[i][79];
+        ans(i, 0) = src(i, 0);
+        ans(i, 79) = src(i, 79);
     }
-
     for (uint8 i = 1; i < 59; i++)
     {
         for (uint8 j = 1; j < 79; j++)
         {
-            ans[i][j] = (src[i - 1][j - 1] + src[i - 1][j] + src[i - 1][j + 1] +
-                         src[i][j - 1] + src[i][j] + src[i][j + 1] +
-                         src[i + 1][j - 1] + src[i + 1][j] + src[i + 1][j + 1]) /
-                        5;
+            if (i == 25 && j == 44)
+            {
+                printf("\n");
+            }
+            uint8 temp = 0;
+            temp += src(i - 1, j - 1);
+            temp += src(i - 1, j);
+            temp += src(i - 1, j + 1);
+            temp += src(i, j - 1);
+            temp += src(i, j);
+            temp += src(i, j + 1);
+            temp += src(i + 1, j - 1);
+            temp += src(i + 1, j);
+            temp += src(i + 1, j + 1);
+            // uint8 temp = (src(i - 1, j - 1) + src(i - 1, j) + src(i - 1, j + 1) +
+            //               src(i, j - 1) + src(i, j) + src(i, j + 1) +
+            //               src(i + 1, j - 1) + src(i + 1, j) + src(i + 1, j + 1));
+            ans(i, j) = temp / 5;
         }
     }
 }
@@ -87,25 +100,25 @@ void sobel(uint8 *src)
     int tempY; //y轴方向的导数
     for (uint8 j = 0; j < 80; j++)
     {
-        sobelAns[0][j] = 0;
-        sobelAns[59][j] = 0;
+        sobelAns(0, j) = 0;
+        sobelAns(59, j) = 0;
     }
     for (uint8 i = 0; i < 60; i++)
     {
-        sobelAns[i][0] = 0;
-        sobelAns[i][79] = 0;
+        sobelAns(i, 0) = 0;
+        sobelAns(i, 79) = 0;
     }
     for (uint8 i = 1; i < 59; i++)
     {
         for (uint8 j = 1; j < 79; j++)
         {
-            tempX = src[i - 1][j + 1] + 2 * src[i][j + 1] + src[i + 1][j + 1] - (src[i - 1][j - 1] + 2 * src[i][j - 1] + src[i + 1][j - 1]);
-            tempY = src[i - 1][j - 1] + 2 * src[i - 1][j] + src[i - 1][j + 1] - (src[i + 1][j - 1] + 2 * src[i + 1][j] + src[i + 1][j + 1]);
+            tempX = src(i - 1, j + 1) + 2 * src(i, j + 1) + src(i + 1, j + 1) - (src(i - 1, j - 1) + 2 * src(i, j - 1) + src(i + 1, j - 1));
+            tempY = src(i - 1, j - 1) + 2 * src(i - 1, j) + src(i - 1, j + 1) - (src(i + 1, j - 1) + 2 * src(i + 1, j) + src(i + 1, j + 1));
             int ans = tempX * tempX + tempY * tempY;
             if (ans > EDGE_CRITICAL_VALUE)
-                sobelAns[i][j] = 1; //超过阈值，则判定为边缘
+                sobelAns(i, j) = 1; //超过阈值，则判定为边缘
             else
-                sobelAns[i][j] = 0;
+                sobelAns(i, j) = 0;
         }
     }
 }
