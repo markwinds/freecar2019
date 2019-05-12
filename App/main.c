@@ -17,7 +17,7 @@ void main()
 
 	while (1)
 	{
-		led_turn(LED0);
+		led_turn(LED1);
 		DELAY_MS(20);
 		waitToDo();
 	}

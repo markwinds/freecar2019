@@ -30,6 +30,7 @@
 #include "NVIC.h"              //设置中断优先级
 #include "LCDUI.h"             //LCD的UI交互
 #include "algorithms.h"        //算法
+#include "picture.h"           //flash操作
 //#include "esp.h"         //无线模块
 
 #endif //__INCLUDE_H__

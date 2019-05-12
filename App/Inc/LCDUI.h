@@ -16,7 +16,7 @@
 #define RUN_MODE 5
 
 #define MAX_OPTION 30					  //lcd能使用的最大的参数个数
-#define SECTOR_NUM (FLASH_SECTOR_NUM - 1) //最后一个扇区
+#define SECTOR_NUM (FLASH_SECTOR_NUM - 1) //最后一个扇区，扇区编号从0开始，最后一个编号是SECTOR_NUM
 
 /*---------------------------------------------状态模式的一些结构体---------------------------------------*/
 typedef struct Screen_Data //传参结构体,ui显示数据的结构体
@@ -87,6 +87,8 @@ Lcd_State *go_Back(Lcd_State *pThis);
 Lcd_State *read_Array(Lcd_State *pThis);
 Lcd_State *read_Before(Lcd_State *pThis);
 Lcd_State *read_After(Lcd_State *pThis);
+Lcd_State *goShowDealedPicture(Lcd_State *pThis);
+Lcd_State *takePhoto(Lcd_State *pThis);
 
 /*普通函数*/
 void PORTD_IRQHandler();

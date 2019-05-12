@@ -31,4 +31,12 @@ void PIT0_IRQHandler(void)
     ftm_quad_clean(FTM2);
 }
 
+void updateQuad()
+{
+    quad_val_left += ftm_quad_get(FTM1); //获取FTM正交解码的脉冲数(负数表示反方向)
+    quad_val_right += ftm_quad_get(FTM2);
+    ftm_quad_clean(FTM1);
+    ftm_quad_clean(FTM2);
+}
+
 //110对1cm
