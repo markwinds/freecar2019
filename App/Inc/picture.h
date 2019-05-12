@@ -24,29 +24,24 @@
 //存一幅图片要偏移的地址数
 #define OFFSET_PER_PICTURE (500 / PICTURE_NUM_PER_SECTOR)
 
-extern int picture_num;    //存储图片的数量
-extern int picture_now_id; //当前的图片id,id从1开始
+#define readPictureToLCDDefault() readPictureToDisplayer(picture_now_id, LCD)
+#define readPictureToUARTDefault() readPictureToDisplayer(picture_now_id, UART)
+
+//显示器
+enum Displayer
+{
+    LCD,
+    UART
+};
+
+extern int picture_num; //存储图片的数量
+extern int picture_now_id;
 
 extern void writePictureToFlash();
-extern void readPictureToLCD(int picture_id);
-
-// extern int sector_id;
-// extern int sector_offset;
-// extern int picture_num;    //存储图片的数量
-// extern int picture_now_id; //当前的图片id,id从1开始
-// extern uint8 imgbuff1[CAMERA_SIZE];
-
-// extern int sector_id;      //记录写入picture时的扇区
-// extern int sector_offset;  //记录写入picture时的偏移地址
-// extern uint8 imgbuff1[CAMERA_SIZE];
-
-// extern void flash_Picture();
-// extern void save_Picture();
-// extern void delete_Picture();
-// extern void read_Picture_Array();
-// extern void next_Write_Location(int f);
-// extern int before_Write_Location();
-// extern void send_Picture10();
-// extern int nextReadLocation();
+extern void readPictureToDisplayer(int picture_id, enum Displayer displayer);
+extern void nextPictureID();
+extern void beforePictureID();
+extern void writeParameterToFlash();
+extern void readParameterFromFlash();
 
 #endif

@@ -50,48 +50,13 @@ extern float motor_go; //在显示状态下控制电机是否转动的变量
 extern uint8 key_on;
 extern uint8 is_show_va;
 extern uint8 is_show_line;
-extern uint8 please_clear;
 extern int colour[]; //存放各个参数背景色的数组
 extern Site_t tem_site_str[];
 extern Site_t tem_site_data[];
 
 /*--------------------------------------------------函数--------------------------------------------------*/
-void onpress_M(); //中间按下时的处理函数
-void onpress_U();
-void onpress_D();
-void onpress_L();
-void onpress_R();
-
-/*对应按键的动作函数*/
-Lcd_State *quit_Lcd(Lcd_State *pThis);
-Lcd_State *goto_Begin(Lcd_State *pThis);
-Lcd_State *goto_End(Lcd_State *pThis);
-Lcd_State *ignore_Oprate(Lcd_State *pThis);
-Lcd_State *goto_Set(Lcd_State *pThis);
-Lcd_State *goto_next(Lcd_State *pThis);
-Lcd_State *data_Down(Lcd_State *pThis);
-Lcd_State *data_Up(Lcd_State *pThis);
-Lcd_State *goto_Before(Lcd_State *pThis);
-Lcd_State *turn_Front(Lcd_State *pThis);
-Lcd_State *turn_Back(Lcd_State *pThis);
-
-Lcd_State *quit_show(Lcd_State *pThis);
-Lcd_State *open_va(Lcd_State *pThis);
-Lcd_State *ushow_line(Lcd_State *pThis);
-Lcd_State *show_line(Lcd_State *pThis);
-Lcd_State *do_nothing(Lcd_State *pThis);
-
-Lcd_State *go_Picture(Lcd_State *pThis);
-Lcd_State *read_Picture(Lcd_State *pThis);
-Lcd_State *go_Back(Lcd_State *pThis);
-Lcd_State *read_Array(Lcd_State *pThis);
-Lcd_State *read_Before(Lcd_State *pThis);
-Lcd_State *read_After(Lcd_State *pThis);
-Lcd_State *goShowDealedPicture(Lcd_State *pThis);
-Lcd_State *takePhoto(Lcd_State *pThis);
 
 /*普通函数*/
-void PORTD_IRQHandler();
 void UI_INIT();
 void updateUI();
 extern void flash_In();
