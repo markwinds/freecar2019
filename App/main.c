@@ -11,7 +11,7 @@ void main()
 	UI_INIT();
 	initUart();
 	// initMotorSteer();
-	//Quad_Init();
+	Quad_Init();
 	LCD_init();
 	camera_init(imgbuff);
 
