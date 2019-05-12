@@ -35,6 +35,13 @@ enum Displayer
     buff
 };
 
+//处理图片的方法
+struct DealPictureWay
+{
+    void (*dealPictureFunction)();
+    char way_name[30];
+};
+
 extern int picture_num; //存储图片的数量
 extern int picture_now_id;
 
@@ -48,5 +55,9 @@ extern void deleteAllPicture();
 extern void showFilterPicture();
 extern void showSobelPicture();
 extern void initFlashs();
+extern void nextDealPictureWay();
+extern void beforeDealPictureWay();
+extern void showOriginalPicture();
+extern void showFilterSobelPicture();
 
 #endif

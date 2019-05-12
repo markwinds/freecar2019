@@ -1,14 +1,23 @@
 #include "common.h"
 #include "include.h"
 
-int sector_id = LAST_SECTOR_ID;
-int sector_offset = 0;
-int picture_num = 0;	  //存储图片的数量
-int picture_now_id = 0;   //当前的图片id,id从0开始
-int picture_write_id = 0; //写入图片时，为图片分配的id,与picture_num一起被写入flash
-uint8 flash_imgbuff[CAMERA_SIZE];
-uint8 flash_img[CAMERA_SIZE * 8];
+int sector_id = LAST_SECTOR_ID;   //扇区的id
+int sector_offset = 0;			  //扇区的偏移地址
+int picture_num = 0;			  //存储图片的数量
+int picture_now_id = 0;			  //当前的图片id,id从0开始
+int picture_write_id = 0;		  //写入图片时，为图片分配的id,与picture_num一起被写入flash
+uint8 flash_imgbuff[CAMERA_SIZE]; //因为imgbuff是摄像头会直接操作的，所以这里重新建一个缓存区用于暂存数据
+uint8 flash_img[CAMERA_SIZE * 8]; //暂存解压图像的数据
 
+struct DealPictureWay deal_picture_way[] = {
+	{showOriginalPicture, "Origin"},
+	{showFilterPicture, "Filted"},
+	{showSobelPicture, "Sobeled"},
+	{showFilterSobelPicture, "F and S"}};
+
+struct DealPictureWay *now_deal_picture_way = deal_picture_way;
+
+/*******************************读写flash的参数定位*******************************************************/
 /*
 利用图片的ID找到扇区id和offset的值
 */
@@ -18,6 +27,26 @@ void updateIDFromPictureID(int picture_id)
 	sector_offset = (picture_id % PICTURE_NUM_PER_SECTOR) * OFFSET_PER_PICTURE; //得到偏移地址
 }
 
+void nextPictureID()
+{
+	picture_now_id = (picture_now_id + 1) % picture_num;
+}
+
+void beforePictureID()
+{
+	picture_now_id = (picture_now_id - 1 + picture_num) % picture_num;
+}
+
+void deleteAllPicture()
+{
+	picture_num = 0;
+	picture_now_id = 0;
+	picture_write_id = 0;
+	writeParameterToFlash();
+}
+
+/*******************************串口输出*******************************************************/
+
 /*
 将flash_imgbuff的图片从串口输出
 */
@@ -25,6 +54,7 @@ void UARTSendPicture(uint8 *src)
 {
 	img_extract(img, src, CAMERA_SIZE);
 	uint8 *p = img;
+	//输出不分割的完整图形
 	for (int i = 0; i < 60; i++)
 	{
 		for (int j = 0; j < 80; j++)
@@ -37,6 +67,7 @@ void UARTSendPicture(uint8 *src)
 		printf("\n");
 	}
 	printf("\n\n\n\n");
+	//输出带间隔的图像，方便看图像的时候数像素点
 	for (int i = 0; i < 60; i++)
 	{
 		if (i % 10 == 0)
@@ -53,6 +84,8 @@ void UARTSendPicture(uint8 *src)
 		printf("\n");
 	}
 }
+
+/***********************************从flash读写图片*****************************************************/
 
 /*
 将imgbuff中的数据写入到flash中
@@ -93,7 +126,40 @@ void writePictureToFlash()
 }
 
 /*
-从flash读取图片到显示器，显示器可以是LCD或者UART
+将flash_buff中的数据写入到flash
+*/
+void writeBuffToFlash(int location_id)
+{
+	updateIDFromPictureID(location_id);
+	if (0 == sector_offset)
+		flash_erase_sector(sector_id);
+	int write_num = 300 / PICTURE_NUM_PER_SECTOR; //一张图片需要写几次
+	for (int i = 0; i < write_num; i++)			  //写入图片数据
+	{
+		FLASH_WRITE_TYPE data;
+#if defined(MK60DZ10)
+		data = ((uint32)flash_imgbuff[4 * i] << 24) +
+			   ((uint32)flash_imgbuff[4 * i + 1] << 16) +
+			   ((uint32)flash_imgbuff[4 * i + 2] << 8) +
+			   ((uint32)flash_imgbuff[4 * i + 3]);
+		flash_write(sector_id, sector_offset * 4, data);
+#elif defined(MK60F15)
+		data = ((uint64)flash_imgbuff[8 * i] << 56) +
+			   ((uint64)flash_imgbuff[8 * i + 1] << 48) +
+			   ((uint64)flash_imgbuff[8 * i + 2] << 40) +
+			   ((uint64)flash_imgbuff[8 * i + 3] << 32) +
+			   ((uint64)flash_imgbuff[8 * i + 4] << 24) +
+			   ((uint64)flash_imgbuff[8 * i + 5] << 16) +
+			   ((uint64)flash_imgbuff[8 * i + 6] << 8) +
+			   ((uint64)flash_imgbuff[8 * i + 7]);
+		flash_write(sector_id, sector_offset * 8, data);
+#endif
+		sector_offset++;
+	}
+}
+
+/*
+从flash读取图片到显示器，显示器可以是LCD或者UART或者flash_buff
 */
 void readPictureToDisplayer(int picture_id, enum Displayer displayer)
 {
@@ -134,15 +200,7 @@ void readPictureToDisplayer(int picture_id, enum Displayer displayer)
 	}
 }
 
-void nextPictureID()
-{
-	picture_now_id = (picture_now_id + 1) % picture_num;
-}
-
-void beforePictureID()
-{
-	picture_now_id = (picture_now_id - 1 + picture_num) % picture_num;
-}
+/***********************************从flash读写参数*****************************************************/
 
 void writeParameterToFlash()
 {
@@ -159,12 +217,11 @@ void readParameterFromFlash()
 	picture_now_id = (int)flash_read(SECTOR_FOR_PICTURE_COUNT, 2 * PICTURE_NUM_PER_SECTOR * 2, FLASH_WRITE_TYPE);
 }
 
-void deleteAllPicture()
+/***********************************显示各种算法处理后的图片*****************************************************/
+
+void showOriginalPicture()
 {
-	picture_num = 0;
-	picture_now_id = 0;
-	picture_write_id = 0;
-	writeParameterToFlash();
+	LCDShowPicture(flash_imgbuff);
 }
 
 void showFilterPicture()
@@ -178,41 +235,25 @@ void showFilterPicture()
 void showSobelPicture()
 {
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
-	sobel(flash_img);
-	img_compress(sobelAns, flash_imgbuff, CAMERA_SIZE);
+	sobel(img, flash_img);
+	img_compress(img, flash_imgbuff, CAMERA_SIZE);
 	LCDShowPicture(flash_imgbuff);
 }
 
-void writeBuffToFlash(int location_id)
+void showFilterSobelPicture()
 {
-	updateIDFromPictureID(location_id);
-	if (0 == sector_offset)
-		flash_erase_sector(sector_id);
-	int write_num = 300 / PICTURE_NUM_PER_SECTOR; //一张图片需要写几次
-	for (int i = 0; i < write_num; i++)			  //写入图片数据
-	{
-		FLASH_WRITE_TYPE data;
-#if defined(MK60DZ10)
-		data = ((uint32)flash_imgbuff[4 * i] << 24) +
-			   ((uint32)flash_imgbuff[4 * i + 1] << 16) +
-			   ((uint32)flash_imgbuff[4 * i + 2] << 8) +
-			   ((uint32)flash_imgbuff[4 * i + 3]);
-		flash_write(sector_id, sector_offset * 4, data);
-#elif defined(MK60F15)
-		data = ((uint64)flash_imgbuff[8 * i] << 56) +
-			   ((uint64)flash_imgbuff[8 * i + 1] << 48) +
-			   ((uint64)flash_imgbuff[8 * i + 2] << 40) +
-			   ((uint64)flash_imgbuff[8 * i + 3] << 32) +
-			   ((uint64)flash_imgbuff[8 * i + 4] << 24) +
-			   ((uint64)flash_imgbuff[8 * i + 5] << 16) +
-			   ((uint64)flash_imgbuff[8 * i + 6] << 8) +
-			   ((uint64)flash_imgbuff[8 * i + 7]);
-		flash_write(sector_id, sector_offset * 8, data);
-#endif
-		sector_offset++;
-	}
+	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
+	filter(img, flash_img);
+	sobel(flash_img, img);
+	img_compress(flash_img, flash_imgbuff, CAMERA_SIZE);
+	LCDShowPicture(flash_imgbuff);
 }
 
+/***********************************flash初始化*****************************************************/
+
+/*
+初始化flash，从flash中读取存储的参数信息，并激活图片的读写操作
+*/
 void initFlashs()
 {
 	readParameterFromFlash();
@@ -231,3 +272,66 @@ void initFlashs()
 		}
 	}
 }
+
+/***********************************处理图片函数定位*****************************************************/
+void nextDealPictureWay()
+{
+	if (now_deal_picture_way == &deal_picture_way[3])
+	{
+		now_deal_picture_way = deal_picture_way;
+	}
+	else
+	{
+		now_deal_picture_way++;
+	}
+	now_deal_picture_way->dealPictureFunction();
+        Site_t site = {40, 80};
+	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
+}
+
+void beforeDealPictureWay()
+{
+	if (now_deal_picture_way == deal_picture_way)
+	{
+		now_deal_picture_way = &deal_picture_way[3];
+	}
+	else
+	{
+		now_deal_picture_way--;
+	}
+	now_deal_picture_way->dealPictureFunction();
+	Site_t site = {40, 80};
+	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
+}
+
+// /*flash操作函数*/
+// void flash_In() //将数据写入flash
+// {
+// 	int i = 0;
+
+// 	flash_erase_sector(SECTOR_NUM); //擦除扇区,擦一次只能写一次
+// 	while (strcmp(screen_data[i].data_name, "end") != 0)
+// 	{
+// 		if (screen_data[i].ip > 0)
+// 		{
+// 			flash_write(SECTOR_NUM, screen_data[i].ip * 4, (uint32)((*(screen_data[i].data_value)) * 100.0 + 0.5)); //四舍五入写入，防止float精度不够
+// 		}
+// 		i++;
+// 	}
+// }
+
+// void flash_Out()
+// {
+// 	int i = 0;
+// 	uint32 data = 0;
+
+// 	while (strcmp(screen_data[i].data_name, "end") != 0)
+// 	{
+// 		if (screen_data[i].ip > 0)
+// 		{
+// 			data = flash_read(SECTOR_NUM, screen_data[i].ip * 4, uint32);
+// 			*(screen_data[i].data_value) = (float)((double)data / 100.0);
+// 		}
+// 		i++;
+// 	}
+// }

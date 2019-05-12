@@ -1,18 +1,17 @@
 #include "include.h"
 #include <string.h>
 
+/*---------------------------------------------变量----------------------------------------------*/
+
 uint8 key_on = 0;
 float motor_go = 10;	//在显示状态下控制电机是否转动的变量
 int colour[MAX_OPTION]; //0元素也保存有有效数据
 Site_t tem_site_str[] = {0, 0, 0, 20, 0, 40, 0, 60, 0, 80, 0, 100};
 Site_t tem_site_data[] = {60, 0, 60, 20, 60, 40, 60, 60, 60, 80, 60, 100};
-
 int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
 float flash_in = 0;  //是否写入flash
-
 float zbt = 0;
-
 Screen_Data screen_data[] = {
 	{"M_KP", &(zbt), 1, 1},
 	{"M_KI", &(zbt), 1, 2},
@@ -33,25 +32,119 @@ Screen_Data screen_data[] = {
 	{"end", &(zbt), 1202, 0}
 
 };
-
 Lcd_State *p_current_state = &imgbuff_show;
 
-/*-----------------新增功能的函数-----------------*/
-Lcd_State *quit_Lcd(Lcd_State *pThis) //退出lcd模式
+/*---------------------------------------------imgbuff_show状态的功能函数----------------------------------------------*/
+
+Lcd_State *imgbuffShowToWaitMiddle(Lcd_State *pThis) //中
+{
+	closeCamera();
+	LCD_clear(WHITE);
+	return &wait_middle;
+}
+
+Lcd_State *imgbuffShowToShowDealedPicture(Lcd_State *pThis) //上
+{
+	if (picture_num)
+	{
+		closeCamera();
+		LCD_clear(WHITE);
+		readPictureToLCDDefault();
+		return &show_dealed_picture;
+	}
+	else
+	{
+		return pThis;
+	}
+}
+
+Lcd_State *imgbuffShowToReadPicture(Lcd_State *pThis) //下
+{
+	if (picture_num)
+	{
+		closeCamera();
+		LCD_clear(WHITE);
+		readPictureToLCDDefault();
+		return &read_picture;
+	}
+	else
+	{
+		return pThis;
+	}
+}
+
+Lcd_State *takePhoto(Lcd_State *pThis) //左
+{
+	writePictureToFlash();
+	return pThis;
+}
+
+/*---------------------------------------------show_dealed_picture状态的功能函数----------------------------------------------*/
+
+Lcd_State *showDealedPictureToImgbuffShow(Lcd_State *pThis) //中
 {
 	LCD_clear(WHITE);
 	openCamera();
 	return &imgbuff_show;
 }
 
-Lcd_State *goto_Begin(Lcd_State *pThis) //从等待模式进入本页第一行
+Lcd_State *beforeDealWay(Lcd_State *pThis) //上
 {
-	current_row = 1;
-	colour[6 * (page - 1) + current_row - 1] = GREEN; //选中的行变成绿色
-	return &normal_page;
+	beforeDealPictureWay();
+	return pThis;
 }
 
-Lcd_State *goto_End(Lcd_State *pThis) //从等待模式进入本页最后一行
+Lcd_State *nextDealWay(Lcd_State *pThis) //下
+{
+	nextDealPictureWay();
+	return pThis;
+}
+
+Lcd_State *readBeforePicture(Lcd_State *pThis) //左
+{
+	beforePictureID();
+	readPictureToLCDDefault();
+	return pThis;
+}
+
+Lcd_State *readNextPicture(Lcd_State *pThis) //右
+{
+	nextPictureID();
+	readPictureToLCDDefault();
+	return pThis;
+}
+
+/*---------------------------------------------read_picture状态的功能函数----------------------------------------------*/
+
+Lcd_State *sendPictureToUART(Lcd_State *pThis) //中 发送当前图片到串口
+{
+	readPictureToUARTDefault();
+	return pThis;
+}
+
+Lcd_State *readPictureToImgbuffShow(Lcd_State *pThis) //上
+{
+	LCD_clear(WHITE);
+	openCamera();
+	return &imgbuff_show;
+}
+
+Lcd_State *savePicture(Lcd_State *pThis) //下
+{
+	writeParameterToFlash();
+	return pThis;
+}
+
+/*---------------------------------------------wait_middle状态的功能函数----------------------------------------------*/
+
+Lcd_State *waitMiddleToImgbuffShow(Lcd_State *pThis) //中
+{
+	LCD_clear(WHITE);
+	openCamera();
+	return &imgbuff_show;
+}
+
+Lcd_State *gotoEnd(Lcd_State *pThis) //上 从等待模式进入本页最后一行
 {
 	if ((colour[MAX_OPTION - 1] / 300) < (page * 6))
 	{
@@ -65,7 +158,14 @@ Lcd_State *goto_End(Lcd_State *pThis) //从等待模式进入本页最后一行
 	return &normal_page;
 }
 
-Lcd_State *turn_Front(Lcd_State *pThis) //向前翻页
+Lcd_State *gotoBegin(Lcd_State *pThis) //下 从等待模式进入本页第一行
+{
+	current_row = 1;
+	colour[6 * (page - 1) + current_row - 1] = GREEN; //选中的行变成绿色
+	return &normal_page;
+}
+
+Lcd_State *turnFront(Lcd_State *pThis) //左 向前翻页
 {
 	if (page > 1)
 	{
@@ -74,7 +174,7 @@ Lcd_State *turn_Front(Lcd_State *pThis) //向前翻页
 	return pThis;
 }
 
-Lcd_State *turn_Back(Lcd_State *pThis) //向后翻页
+Lcd_State *turnBack(Lcd_State *pThis) //右 向后翻页
 {
 	if (page * 6 < (colour[MAX_OPTION - 1] / 300))
 	{
@@ -83,12 +183,9 @@ Lcd_State *turn_Back(Lcd_State *pThis) //向后翻页
 	return pThis;
 }
 
-Lcd_State *doNothing(Lcd_State *pThis) //忽略按键操作，返回原来的状态即保持状态不变
-{
-	return pThis;
-}
+/*---------------------------------------------normal_page状态的功能函数----------------------------------------------*/
 
-Lcd_State *goto_Set(Lcd_State *pThis) //选中参数开始设置
+Lcd_State *gotoSet(Lcd_State *pThis) //中 选中参数开始设置
 {
 	int tempId = 6 * (page - 1) + current_row - 1;
 	if (GREEN == colour[tempId])
@@ -98,7 +195,32 @@ Lcd_State *goto_Set(Lcd_State *pThis) //选中参数开始设置
 	return pThis;
 }
 
-Lcd_State *goto_next(Lcd_State *pThis) //跳转到下一个参数
+Lcd_State *gotoBefore(Lcd_State *pThis) //上 跳转到上一个参数
+{
+	if (GREEN == colour[6 * (page - 1) + current_row - 1]) //只有在未选中的情况下才进行操作
+	{
+		colour[6 * (page - 1) + current_row - 1] = WHITE; //将原来选项的背景色变白
+		if (current_row != 1)
+		{
+			current_row--;
+		}
+		else if (page > 1) //如果不是第一页，是第一行
+		{
+			page--;
+			current_row = 6;
+		}
+		else //是第一页第一行
+		{
+			return &wait_middle;
+		}
+		colour[6 * (page - 1) + current_row - 1] = GREEN;
+		return pThis;
+	}
+	else
+		return pThis;
+}
+
+Lcd_State *gotoNext(Lcd_State *pThis) //下 跳转到下一个参数
 {
 	int tempId = 6 * (page - 1) + current_row - 1;
 	if (GREEN == colour[tempId])
@@ -124,33 +246,7 @@ Lcd_State *goto_next(Lcd_State *pThis) //跳转到下一个参数
 		return pThis;
 }
 
-Lcd_State *goto_Before(Lcd_State *pThis) //跳转到上一个参数
-{
-	if (GREEN == colour[6 * (page - 1) + current_row - 1]) //只有在未选中的情况下才进行操作
-	{
-		colour[6 * (page - 1) + current_row - 1] = WHITE; //将原来选项的背景色变白
-		if (current_row != 1)
-		{
-			current_row--;
-		}
-		else if (page > 1) //如果不是第一页，是第一行
-		{
-			page--;
-			current_row = 6;
-		}
-		else //是第一页第一行
-		{
-			return &wait_middle;
-		}
-		colour[6 * (page - 1) + current_row - 1] = GREEN;
-		return pThis;
-	}
-	else
-		return pThis;
-}
-
-/*如果在选中模式则改变数据，如果没有选中则进入等待模式*/
-Lcd_State *data_Down(Lcd_State *pThis)
+Lcd_State *dataDown(Lcd_State *pThis) //左
 {
 	int tempId = 6 * (page - 1) + current_row - 1;
 	if (RED == colour[tempId])
@@ -165,7 +261,7 @@ Lcd_State *data_Down(Lcd_State *pThis)
 		}
 		if (screen_data[tempId].ip == -1) //写flash操作
 		{
-			flash_In();
+			//flash_In();
 		}
 	}
 	else
@@ -177,7 +273,7 @@ Lcd_State *data_Down(Lcd_State *pThis)
 	return pThis;
 }
 
-Lcd_State *data_Up(Lcd_State *pThis)
+Lcd_State *dataUp(Lcd_State *pThis) //右
 {
 	int tempId = 6 * (page - 1) + current_row - 1;
 	if (RED == colour[tempId])
@@ -192,7 +288,7 @@ Lcd_State *data_Up(Lcd_State *pThis)
 		}
 		if (screen_data[tempId].ip == -1) //写flash操作
 		{
-			flash_In();
+			//flash_In();
 		}
 	}
 	else
@@ -204,158 +300,14 @@ Lcd_State *data_Up(Lcd_State *pThis)
 	return pThis;
 }
 
-Lcd_State *quit_show(Lcd_State *pThis) //离开摄像头显示模式
-{
-	closeCamera();
-	LCD_clear(WHITE);
-	return &wait_middle;
-}
+/*---------------------------------------------do nothing----------------------------------------------*/
 
-Lcd_State *go_Picture(Lcd_State *pThis)
+Lcd_State *doNothing(Lcd_State *pThis) //忽略按键操作，返回原来的状态即保持状态不变
 {
-	if (picture_num)
-	{
-		closeCamera();
-		LCD_clear(WHITE);
-		readPictureToLCDDefault();
-		return &read_picture;
-	}
-	else
-	{
-		return pThis;
-	}
-}
-
-Lcd_State *sendPictureToUART(Lcd_State *pThis) //发送当前图片到串口
-{
-	readPictureToUARTDefault();
 	return pThis;
 }
 
-Lcd_State *read_picture_to_imgbuff_show(Lcd_State *pThis)
-{
-	LCD_clear(WHITE);
-	openCamera();
-	return &imgbuff_show;
-}
-
-Lcd_State *readBeforePicture(Lcd_State *pThis) //前一幅图片
-{
-	beforePictureID();
-	readPictureToLCDDefault();
-	return pThis;
-}
-
-Lcd_State *readNextPicture(Lcd_State *pThis)
-{
-	nextPictureID();
-	readPictureToLCDDefault();
-	return pThis;
-}
-
-Lcd_State *takePhoto(Lcd_State *pThis)
-{
-	writePictureToFlash();
-	return pThis;
-}
-
-Lcd_State *savePicture(Lcd_State *pThis)
-{
-	writeParameterToFlash();
-	return pThis;
-}
-
-Lcd_State *goShowDealedPicture(Lcd_State *pThis)
-{
-	if (picture_num)
-	{
-		closeCamera();
-		LCD_clear(WHITE);
-		readPictureToLCDDefault();
-		return &show_dealed_picture;
-	}
-	else
-	{
-		return pThis;
-	}
-}
-
-Lcd_State *showDealedPictureToImgbuffShow(Lcd_State *pThis)
-{
-	LCD_clear(WHITE);
-	openCamera();
-	return &imgbuff_show;
-}
-
-Lcd_State *showFilterPictures(Lcd_State *pThis)
-{
-	showFilterPicture();
-	return pThis;
-}
-
-Lcd_State *showSobelPictures(Lcd_State *pThis)
-{
-	showSobelPicture();
-	return pThis;
-}
-
-/*中断调用的函数*/
-void onpress_M()
-{
-	p_current_state = p_current_state->press_M(p_current_state);
-}
-
-void onpress_U()
-{
-	p_current_state = p_current_state->press_U(p_current_state);
-}
-
-void onpress_D()
-{
-	p_current_state = p_current_state->press_D(p_current_state);
-}
-
-void onpress_L()
-{
-	p_current_state = p_current_state->press_L(p_current_state);
-}
-
-void onpress_R()
-{
-	p_current_state = p_current_state->press_R(p_current_state);
-}
-
-/*flash操作函数*/
-void flash_In() //将数据写入flash
-{
-	int i = 0;
-
-	flash_erase_sector(SECTOR_NUM); //擦除扇区,擦一次只能写一次
-	while (strcmp(screen_data[i].data_name, "end") != 0)
-	{
-		if (screen_data[i].ip > 0)
-		{
-			flash_write(SECTOR_NUM, screen_data[i].ip * 4, (uint32)((*(screen_data[i].data_value)) * 100.0 + 0.5)); //四舍五入写入，防止float精度不够
-		}
-		i++;
-	}
-}
-
-void flash_Out()
-{
-	int i = 0;
-	uint32 data = 0;
-
-	while (strcmp(screen_data[i].data_name, "end") != 0)
-	{
-		if (screen_data[i].ip > 0)
-		{
-			data = flash_read(SECTOR_NUM, screen_data[i].ip * 4, uint32);
-			*(screen_data[i].data_value) = (float)((double)data / 100.0);
-		}
-		i++;
-	}
-}
+/*---------------------------------------------中断----------------------------------------------*/
 
 void PORTD_IRQHandler()
 {
@@ -370,23 +322,23 @@ void PORTD_IRQHandler()
 
 	if (gpio_get(KEY_PTxn[5]) == KEY_DOWN && flag & (1 << 13)) //中键按下
 	{
-		onpress_M();
+		p_current_state = p_current_state->press_M(p_current_state);
 	}
 	else if (gpio_get(KEY_PTxn[0]) == KEY_DOWN && flag & (1 << 10))
 	{
-		onpress_R();
+		p_current_state = p_current_state->press_R(p_current_state);
 	}
 	else if (gpio_get(KEY_PTxn[1]) == KEY_DOWN && flag & (1 << 14))
 	{
-		onpress_L();
+		p_current_state = p_current_state->press_L(p_current_state);
 	}
 	else if (gpio_get(KEY_PTxn[2]) == KEY_DOWN && flag & (1 << 11))
 	{
-		onpress_D();
+		p_current_state = p_current_state->press_D(p_current_state);
 	}
 	else if (gpio_get(KEY_PTxn[3]) == KEY_DOWN && flag & (1 << 12))
 	{
-		onpress_U();
+		p_current_state = p_current_state->press_U(p_current_state);
 	}
 	// else if ((gpio_get(KEY_PTxn[4]) == KEY_DOWN && flag & (1 << 7)) && p_current_state == &imgbuff_show)
 	// {
@@ -394,6 +346,8 @@ void PORTD_IRQHandler()
 	// }
 	key_on = 1; //记录有按键按下
 }
+
+/*---------------------------------------------UI初始化和更新----------------------------------------------*/
 
 /*结构体的元素个数存放在colour[MAX_OPTION - 1]中 
 消抖时间控制在最后几行*/
@@ -451,46 +405,46 @@ void UI_INIT()
 	initFlashs();
 }
 
-/*----------各种状态下对应的5个建的操作--------*/
+/*----------------------------------------各种状态下对应的5个建的操作---------------------------------------*/
 /*光标停留在屏幕外，此时为等待模式*/
-Lcd_State wait_middle =
-	{
-		quit_Lcd,   //中 退出lcd,显示图像
-		goto_End,   //上 去最下面
-		goto_Begin, //下 去最上面
-		turn_Front, //左 向前翻页
-		turn_Back   //右 向后翻页
-};
-Lcd_State normal_page =
-	{
-		goto_Set,	//中
-		goto_Before, //上
-		goto_next,   //下
-		data_Down,   //左
-		data_Up		 //右
-};
 Lcd_State imgbuff_show =
 	{
-		quit_show,			 //中
-		goShowDealedPicture, //上 进入显示
-		go_Picture,			 //下
-		takePhoto,			 //左
-		doNothing			 //右
-};
-Lcd_State read_picture =
-	{
-		sendPictureToUART,			  //中	发送当前的图片
-		read_picture_to_imgbuff_show, //上
-		savePicture,				  //下
-		readBeforePicture,			  //左
-		readNextPicture				  //右
+		imgbuffShowToWaitMiddle,		//中
+		imgbuffShowToShowDealedPicture, //上 进入显示
+		imgbuffShowToReadPicture,		//下
+		takePhoto,						//左
+		doNothing						//右
 };
 //显示处理过的图像
 Lcd_State show_dealed_picture =
 	{
-		showFilterPictures,				//中
-		showSobelPictures,				//上
-		showDealedPictureToImgbuffShow, //下
+		showDealedPictureToImgbuffShow, //中
+		beforeDealWay,					//上
+		nextDealWay,					//下
 		readBeforePicture,				//左
 		readNextPicture					//右
+};
+Lcd_State read_picture =
+	{
+		sendPictureToUART,		  //中	发送当前的图片
+		readPictureToImgbuffShow, //上
+		savePicture,			  //下
+		readBeforePicture,		  //左
+		readNextPicture			  //右
+};
+Lcd_State wait_middle =
+	{
+		waitMiddleToImgbuffShow, //中 退出lcd,显示图像
+		gotoEnd,				 //上 去最下面
+		gotoBegin,				 //下 去最上面
+		turnFront,				 //左 向前翻页
+		turnBack				 //右 向后翻页
+};
+Lcd_State normal_page =
+	{
+		gotoSet,	//中
+		gotoBefore, //上
+		gotoNext,   //下
+		dataDown,   //左
+		dataUp		//右
 };

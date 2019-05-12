@@ -1,7 +1,7 @@
 #include "common.h"
 #include "include.h"
 
-uint8 sobelAns[CAMERA_SIZE * 8]; //存储边缘检测的结果，是边缘则为1，不是边缘为0
+/***********************************曲率算法*****************************************************/
 
 /*
 在区间[0,a/s)找到第一个x*x>=a的数
@@ -50,6 +50,8 @@ uint32 getCurvature(uint8 x1, uint8 y1, uint8 x2, uint8 y2, uint8 x3, uint8 y3)
     return num * 1000 / den;
 }
 
+/***********************************滤波算法*****************************************************/
+
 /*
 3*3滤波
 */
@@ -69,44 +71,31 @@ void filter(uint8 *ans, uint8 *src)
     {
         for (uint8 j = 1; j < 79; j++)
         {
-            if (i == 25 && j == 44)
-            {
-                printf("\n");
-            }
-            uint8 temp = 0;
-            temp += src(i - 1, j - 1);
-            temp += src(i - 1, j);
-            temp += src(i - 1, j + 1);
-            temp += src(i, j - 1);
-            temp += src(i, j);
-            temp += src(i, j + 1);
-            temp += src(i + 1, j - 1);
-            temp += src(i + 1, j);
-            temp += src(i + 1, j + 1);
-            // uint8 temp = (src(i - 1, j - 1) + src(i - 1, j) + src(i - 1, j + 1) +
-            //               src(i, j - 1) + src(i, j) + src(i, j + 1) +
-            //               src(i + 1, j - 1) + src(i + 1, j) + src(i + 1, j + 1));
-            ans(i, j) = temp / 5;
+            ans(i, j) = (src(i - 1, j - 1) + src(i - 1, j) + src(i - 1, j + 1) +
+                         src(i, j - 1) + src(i, j) + src(i, j + 1) +
+                         src(i + 1, j - 1) + src(i + 1, j) + src(i + 1, j + 1)) /
+                        5;
         }
     }
 }
 
+/***********************************边缘检测算法*****************************************************/
 /*
 sobel算子边缘检测
 */
-void sobel(uint8 *src)
+void sobel(uint8 *ans, uint8 *src)
 {
     int tempX; //x轴方向的导数
     int tempY; //y轴方向的导数
     for (uint8 j = 0; j < 80; j++)
     {
-        sobelAns(0, j) = 0;
-        sobelAns(59, j) = 0;
+        ans(0, j) = 0;
+        ans(59, j) = 0;
     }
     for (uint8 i = 0; i < 60; i++)
     {
-        sobelAns(i, 0) = 0;
-        sobelAns(i, 79) = 0;
+        ans(i, 0) = 0;
+        ans(i, 79) = 0;
     }
     for (uint8 i = 1; i < 59; i++)
     {
@@ -116,9 +105,9 @@ void sobel(uint8 *src)
             tempY = src(i - 1, j - 1) + 2 * src(i - 1, j) + src(i - 1, j + 1) - (src(i + 1, j - 1) + 2 * src(i + 1, j) + src(i + 1, j + 1));
             int ans = tempX * tempX + tempY * tempY;
             if (ans > EDGE_CRITICAL_VALUE)
-                sobelAns(i, j) = 1; //超过阈值，则判定为边缘
+                ans(i, j) = 1; //超过阈值，则判定为边缘
             else
-                sobelAns(i, j) = 0;
+                ans(i, j) = 0;
         }
     }
 }
