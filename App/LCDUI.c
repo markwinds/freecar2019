@@ -105,7 +105,7 @@ Lcd_State *readBeforePictureAndString(Lcd_State *pThis) //左
 	beforePictureID();
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
+	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
 	return pThis;
 }
 
@@ -114,7 +114,7 @@ Lcd_State *readNextPictureAndString(Lcd_State *pThis) //右
 	nextPictureID();
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
+	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
 	return pThis;
 }
 
@@ -392,12 +392,12 @@ void updateUI()
 		}
 		if (99 == screen_data[m + i].icrement)
 		{
-			LCD_str(tem_site_str[i], screen_data[m + i].data_name, BLACK, colour[m + i]); //记得回来改颜色
-			LCD_str(tem_site_data[i], (*(screen_data[m + i].data_value) < 0) ? "ON" : "OFF", BLACK, WHITE);
+			LCD_str(tem_site_str[i], (uint8*)(screen_data[m + i].data_name), BLACK, colour[m + i]); //记得回来改颜色
+			LCD_str(tem_site_data[i], (uint8*)((*(screen_data[m + i].data_value) < 0) ? "ON" : "OFF"), BLACK, WHITE);
 		}
 		else
 		{
-			LCD_str(tem_site_str[i], screen_data[m + i].data_name, BLACK, colour[m + i]); //记得回来改颜色
+			LCD_str(tem_site_str[i], (uint8*)(screen_data[m + i].data_name), BLACK, colour[m + i]); //记得回来改颜色
 			LCD_numf(tem_site_data[i], (float)(*(screen_data[m + i].data_value)), BLACK, WHITE);
 		}
 	}

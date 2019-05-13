@@ -294,7 +294,7 @@ void nextDealPictureWay()
 	}
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
+	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
 }
 
 void beforeDealPictureWay()
@@ -309,7 +309,7 @@ void beforeDealPictureWay()
 	}
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
+	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
 }
 
 // /*flash操作函数*/

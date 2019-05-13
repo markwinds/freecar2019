@@ -33,4 +33,7 @@
 #include "picture.h"           //flash操作
 //#include "esp.h"         //无线模块
 
+#pragma diag_suppress = Pe1665
+#pragma diag_suppress = Ta023
+
 #endif //__INCLUDE_H__
