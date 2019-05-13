@@ -44,6 +44,7 @@ struct DealPictureWay
 
 extern int picture_num; //存储图片的数量
 extern int picture_now_id;
+extern struct DealPictureWay *now_deal_picture_way;
 
 extern void writePictureToFlash();
 extern void readPictureToDisplayer(int picture_id, enum Displayer displayer);

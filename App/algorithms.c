@@ -103,8 +103,8 @@ void sobel(uint8 *ans, uint8 *src)
         {
             tempX = src(i - 1, j + 1) + 2 * src(i, j + 1) + src(i + 1, j + 1) - (src(i - 1, j - 1) + 2 * src(i, j - 1) + src(i + 1, j - 1));
             tempY = src(i - 1, j - 1) + 2 * src(i - 1, j) + src(i - 1, j + 1) - (src(i + 1, j - 1) + 2 * src(i + 1, j) + src(i + 1, j + 1));
-            int ans = tempX * tempX + tempY * tempY;
-            if (ans > EDGE_CRITICAL_VALUE)
+            int tempAns = tempX * tempX + tempY * tempY;
+            if (tempAns > EDGE_CRITICAL_VALUE)
                 ans(i, j) = 1; //超过阈值，则判定为边缘
             else
                 ans(i, j) = 0;

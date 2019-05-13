@@ -100,17 +100,21 @@ Lcd_State *nextDealWay(Lcd_State *pThis) //下
 	return pThis;
 }
 
-Lcd_State *readBeforePicture(Lcd_State *pThis) //左
+Lcd_State *readBeforePictureAndString(Lcd_State *pThis) //左
 {
 	beforePictureID();
-	readPictureToLCDDefault();
+	now_deal_picture_way->dealPictureFunction();
+	Site_t site = {40, 80};
+	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
 	return pThis;
 }
 
-Lcd_State *readNextPicture(Lcd_State *pThis) //右
+Lcd_State *readNextPictureAndString(Lcd_State *pThis) //右
 {
 	nextPictureID();
-	readPictureToLCDDefault();
+	now_deal_picture_way->dealPictureFunction();
+	Site_t site = {40, 80};
+	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
 	return pThis;
 }
 
@@ -132,6 +136,20 @@ Lcd_State *readPictureToImgbuffShow(Lcd_State *pThis) //上
 Lcd_State *savePicture(Lcd_State *pThis) //下
 {
 	writeParameterToFlash();
+	return pThis;
+}
+
+Lcd_State *readBeforePicture(Lcd_State *pThis) //左
+{
+	beforePictureID();
+	readPictureToLCDDefault();
+	return pThis;
+}
+
+Lcd_State *readNextPicture(Lcd_State *pThis) //右
+{
+	nextPictureID();
+	readPictureToLCDDefault();
 	return pThis;
 }
 
@@ -421,8 +439,8 @@ Lcd_State show_dealed_picture =
 		showDealedPictureToImgbuffShow, //中
 		beforeDealWay,					//上
 		nextDealWay,					//下
-		readBeforePicture,				//左
-		readNextPicture					//右
+		readBeforePictureAndString,		//左
+		readNextPictureAndString		//右
 };
 Lcd_State read_picture =
 	{

@@ -221,11 +221,15 @@ void readParameterFromFlash()
 
 void showOriginalPicture()
 {
+	LCD_clear(WHITE);
+	readPictureToDisplayer(picture_now_id, buff);
 	LCDShowPicture(flash_imgbuff);
 }
 
 void showFilterPicture()
 {
+	LCD_clear(WHITE);
+	readPictureToDisplayer(picture_now_id, buff);
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
 	filter(img, flash_img);
 	img_compress(img, flash_imgbuff, CAMERA_SIZE);
@@ -234,6 +238,8 @@ void showFilterPicture()
 
 void showSobelPicture()
 {
+	LCD_clear(WHITE);
+	readPictureToDisplayer(picture_now_id, buff);
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
 	sobel(img, flash_img);
 	img_compress(img, flash_imgbuff, CAMERA_SIZE);
@@ -242,6 +248,8 @@ void showSobelPicture()
 
 void showFilterSobelPicture()
 {
+	LCD_clear(WHITE);
+	readPictureToDisplayer(picture_now_id, buff);
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
 	filter(img, flash_img);
 	sobel(flash_img, img);
@@ -285,7 +293,7 @@ void nextDealPictureWay()
 		now_deal_picture_way++;
 	}
 	now_deal_picture_way->dealPictureFunction();
-        Site_t site = {40, 80};
+	Site_t site = {40, 80};
 	LCD_str(site, now_deal_picture_way->way_name, BLACK, WHITE);
 }
 
