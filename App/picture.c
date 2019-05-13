@@ -13,7 +13,8 @@ struct DealPictureWay deal_picture_way[] = {
 	{showOriginalPicture, "Origin"},
 	{showFilterPicture, "Filted"},
 	{showSobelPicture, "Sobeled"},
-	{showFilterSobelPicture, "F and S"}};
+	{showFilterSobelPicture, "F and S"},
+	{NULL, "end"}};
 
 struct DealPictureWay *now_deal_picture_way = deal_picture_way;
 
@@ -284,13 +285,10 @@ void initFlashs()
 /***********************************处理图片函数定位*****************************************************/
 void nextDealPictureWay()
 {
-	if (now_deal_picture_way == &deal_picture_way[3])
+	now_deal_picture_way++;
+	if (0 == strcmp(now_deal_picture_way->way_name, "end"))
 	{
 		now_deal_picture_way = deal_picture_way;
-	}
-	else
-	{
-		now_deal_picture_way++;
 	}
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
@@ -301,12 +299,12 @@ void beforeDealPictureWay()
 {
 	if (now_deal_picture_way == deal_picture_way)
 	{
-		now_deal_picture_way = &deal_picture_way[3];
+		while (strcmp(now_deal_picture_way->way_name, "end") != 0)
+		{
+			now_deal_picture_way++;
+		}
 	}
-	else
-	{
-		now_deal_picture_way--;
-	}
+	now_deal_picture_way--;
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
 	LCD_str(site, (uint8 *)(now_deal_picture_way->way_name), BLACK, WHITE);

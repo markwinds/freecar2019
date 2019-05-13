@@ -78,6 +78,12 @@ Lcd_State *takePhoto(Lcd_State *pThis) //左
 	return pThis;
 }
 
+Lcd_State *imgbuffShowToSetVaule(Lcd_State *pThis) //右
+{
+	showFlowValue();
+	return &set_value;
+}
+
 /*---------------------------------------------show_dealed_picture状态的功能函数----------------------------------------------*/
 
 Lcd_State *showDealedPictureToImgbuffShow(Lcd_State *pThis) //中
@@ -325,6 +331,34 @@ Lcd_State *dataUp(Lcd_State *pThis) //右
 	return pThis;
 }
 
+/*---------------------------------------------set_value----------------------------------------------*/
+
+Lcd_State *middleSetVaule(Lcd_State *pThis) //中
+{
+	LCD_clear(WHITE);
+	return &imgbuff_show;
+}
+Lcd_State *upSetVaule(Lcd_State *pThis) //上
+{
+	beforeFlowValue();
+	return pThis;
+}
+Lcd_State *downSetVaule(Lcd_State *pThis) //下
+{
+	nextFlowValue();
+	return pThis;
+}
+Lcd_State *leftSetVaule(Lcd_State *pThis) //左
+{
+	subFlowValue();
+	return pThis;
+}
+Lcd_State *rightSetVaule(Lcd_State *pThis) //右
+{
+	addFlowValue();
+	return pThis;
+}
+
 /*---------------------------------------------do nothing----------------------------------------------*/
 
 Lcd_State *doNothing(Lcd_State *pThis) //忽略按键操作，返回原来的状态即保持状态不变
@@ -438,7 +472,7 @@ Lcd_State imgbuff_show =
 		imgbuffShowToShowDealedPicture, //上 进入显示
 		imgbuffShowToReadPicture,		//下
 		takePhoto,						//左
-		doNothing						//右
+		imgbuffShowToSetVaule			//右
 };
 //显示处理过的图像
 Lcd_State show_dealed_picture =
@@ -472,4 +506,12 @@ Lcd_State normal_page =
 		gotoNext,   //下
 		dataDown,   //左
 		dataUp		//右
+};
+Lcd_State set_value =
+	{
+		middleSetVaule, //中
+		upSetVaule,		//上
+		downSetVaule,   //下
+		leftSetVaule,   //左
+		rightSetVaule   //右
 };

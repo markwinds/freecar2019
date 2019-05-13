@@ -31,6 +31,7 @@
 #include "LCDUI.h"             //LCD的UI交互
 #include "algorithms.h"        //算法
 #include "picture.h"           //flash操作
+#include "set_value.h"         //在摄像头的界面内修改数值
 //#include "esp.h"         //无线模块
 
 #pragma diag_suppress = Pe1665
