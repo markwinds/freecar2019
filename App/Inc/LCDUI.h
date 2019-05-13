@@ -21,10 +21,10 @@
 /*---------------------------------------------状态模式的一些结构体---------------------------------------*/
 typedef struct Screen_Data //传参结构体,ui显示数据的结构体
 {
-	char *data_name;   //参数名称
-	float *data_value; //参数值
-	float icrement;	//参数累加数 如果是100就是on\off
-	int ip;			   //是否存放入flash的标志位
+	char *data_name; //参数名称
+	int *data_value; //参数值
+	int icrement;	//参数累加数 如果是99就是on\off
+	int ip;			 //是否存放入flash的标志位,为负数时表示该参数不写入flash，为正数时表示存储扇区的偏移地址
 } Screen_Data;
 
 //输入的是当前的状态，返回的是操作后的状态
@@ -45,11 +45,8 @@ extern int page;				  //ui当前所在页
 extern int current_row;			  //ui当前所在行
 extern Screen_Data screen_data[]; //ui显示的参数
 
-extern float flash_in; //是否将参数写进flash的标志，改变一次写入一次
-extern float motor_go; //在显示状态下控制电机是否转动的变量
+//extern float motor_go; //在显示状态下控制电机是否转动的变量
 extern uint8 key_on;
-extern uint8 is_show_va;
-extern uint8 is_show_line;
 extern int colour[]; //存放各个参数背景色的数组
 extern Site_t tem_site_str[];
 extern Site_t tem_site_data[];

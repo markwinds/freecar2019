@@ -18,6 +18,9 @@
 //存放picture_count的扇区
 #define SECTOR_FOR_PICTURE_COUNT (LAST_SECTOR_ID - PICTURE_SECTOR_SIZE)
 
+//存放UI参数的扇区
+#define SECTOR_FOR_UI_COUNT (LAST_SECTOR_ID - PICTURE_SECTOR_SIZE - 1)
+
 //最多存放图片的数量
 #define MAX_PICTURE_NUM (PICTURE_SECTOR_SIZE * PICTURE_NUM_PER_SECTOR)
 
@@ -60,5 +63,7 @@ extern void nextDealPictureWay();
 extern void beforeDealPictureWay();
 extern void showOriginalPicture();
 extern void showFilterSobelPicture();
+extern void writeUIParameterToFlash();
+extern void readUIParameterFromFlash();
 
 #endif

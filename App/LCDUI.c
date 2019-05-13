@@ -4,14 +4,14 @@
 /*---------------------------------------------变量----------------------------------------------*/
 
 uint8 key_on = 0;
-float motor_go = 10;	//在显示状态下控制电机是否转动的变量
+//float motor_go = 10;	//在显示状态下控制电机是否转动的变量
 int colour[MAX_OPTION]; //0元素也保存有有效数据
 Site_t tem_site_str[] = {0, 0, 0, 20, 0, 40, 0, 60, 0, 80, 0, 100};
 Site_t tem_site_data[] = {60, 0, 60, 20, 60, 40, 60, 60, 60, 80, 60, 100};
 int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
-float flash_in = 0;  //是否写入flash
-float zbt = 0;
+
+int zbt = 0;
 Screen_Data screen_data[] = {
 	{"M_KP", &(zbt), 1, 1},
 	{"M_KI", &(zbt), 1, 2},
@@ -29,9 +29,8 @@ Screen_Data screen_data[] = {
 	{"S_KP", &(zbt), 1, 5},
 	{"S_KD", &(zbt), 1, 6},
 
-	{"end", &(zbt), 1202, 0}
-
-};
+	{"flash", &(zbt), 1, 6},
+	{"end", &(zbt), 1202, 0}};
 Lcd_State *p_current_state = &imgbuff_show;
 
 /*---------------------------------------------imgbuff_show状态的功能函数----------------------------------------------*/
@@ -105,7 +104,7 @@ Lcd_State *readBeforePictureAndString(Lcd_State *pThis) //左
 	beforePictureID();
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
+	LCD_str(site, (uint8 *)(now_deal_picture_way->way_name), BLACK, WHITE);
 	return pThis;
 }
 
@@ -114,7 +113,7 @@ Lcd_State *readNextPictureAndString(Lcd_State *pThis) //右
 	nextPictureID();
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
+	LCD_str(site, (uint8 *)(now_deal_picture_way->way_name), BLACK, WHITE);
 	return pThis;
 }
 
@@ -269,17 +268,21 @@ Lcd_State *dataDown(Lcd_State *pThis) //左
 	int tempId = 6 * (page - 1) + current_row - 1;
 	if (RED == colour[tempId])
 	{
-		if (screen_data[tempId].icrement == 99)
+		if (0 == strcmp(screen_data[tempId].data_name, "flash")) //写flash操作
 		{
-			*(screen_data[tempId].data_value) *= -1;
+			writeUIParameterToFlash();
+			*(screen_data[tempId].data_value) += screen_data[tempId].icrement;
 		}
-		else
+		else //不是控制flash的变量
 		{
-			*(screen_data[tempId].data_value) -= screen_data[tempId].icrement;
-		}
-		if (screen_data[tempId].ip == -1) //写flash操作
-		{
-			//flash_In();
+			if (screen_data[tempId].icrement == 99)
+			{
+				*(screen_data[tempId].data_value) *= -1;
+			}
+			else
+			{
+				*(screen_data[tempId].data_value) -= screen_data[tempId].icrement;
+			}
 		}
 	}
 	else
@@ -296,17 +299,21 @@ Lcd_State *dataUp(Lcd_State *pThis) //右
 	int tempId = 6 * (page - 1) + current_row - 1;
 	if (RED == colour[tempId])
 	{
-		if (screen_data[tempId].icrement == 99)
+		if (0 == strcmp(screen_data[tempId].data_name, "flash")) //写flash操作
 		{
-			*(screen_data[tempId].data_value) *= -1;
+			writeUIParameterToFlash();
+			*(screen_data[tempId].data_value) += screen_data[tempId].icrement;
 		}
 		else
 		{
-			*(screen_data[tempId].data_value) += screen_data[tempId].icrement;
-		}
-		if (screen_data[tempId].ip == -1) //写flash操作
-		{
-			//flash_In();
+			if (screen_data[tempId].icrement == 99)
+			{
+				*(screen_data[tempId].data_value) *= -1;
+			}
+			else
+			{
+				*(screen_data[tempId].data_value) += screen_data[tempId].icrement;
+			}
 		}
 	}
 	else
@@ -392,12 +399,12 @@ void updateUI()
 		}
 		if (99 == screen_data[m + i].icrement)
 		{
-			LCD_str(tem_site_str[i], (uint8*)(screen_data[m + i].data_name), BLACK, colour[m + i]); //记得回来改颜色
-			LCD_str(tem_site_data[i], (uint8*)((*(screen_data[m + i].data_value) < 0) ? "ON" : "OFF"), BLACK, WHITE);
+			LCD_str(tem_site_str[i], (uint8 *)(screen_data[m + i].data_name), BLACK, colour[m + i]); //记得回来改颜色
+			LCD_str(tem_site_data[i], (uint8 *)((*(screen_data[m + i].data_value) < 0) ? "ON" : "OFF"), BLACK, WHITE);
 		}
 		else
 		{
-			LCD_str(tem_site_str[i], (uint8*)(screen_data[m + i].data_name), BLACK, colour[m + i]); //记得回来改颜色
+			LCD_str(tem_site_str[i], (uint8 *)(screen_data[m + i].data_name), BLACK, colour[m + i]); //记得回来改颜色
 			LCD_numf(tem_site_data[i], (float)(*(screen_data[m + i].data_value)), BLACK, WHITE);
 		}
 	}

@@ -294,7 +294,7 @@ void nextDealPictureWay()
 	}
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
+	LCD_str(site, (uint8 *)(now_deal_picture_way->way_name), BLACK, WHITE);
 }
 
 void beforeDealPictureWay()
@@ -309,37 +309,36 @@ void beforeDealPictureWay()
 	}
 	now_deal_picture_way->dealPictureFunction();
 	Site_t site = {40, 80};
-	LCD_str(site, (uint8*)(now_deal_picture_way->way_name), BLACK, WHITE);
+	LCD_str(site, (uint8 *)(now_deal_picture_way->way_name), BLACK, WHITE);
 }
 
-// /*flash操作函数*/
-// void flash_In() //将数据写入flash
-// {
-// 	int i = 0;
+/***********************************UI输入参数的flash操作*****************************************************/
+void writeUIParameterToFlash()
+{
+	int i = 0;
+	flash_erase_sector(SECTOR_FOR_UI_COUNT); //擦除扇区,擦一次只能写一次
+	while (strcmp(screen_data[i].data_name, "end") != 0)
+	{
+		if (screen_data[i].ip >= 0)
+		{
+			flash_write(SECTOR_FOR_UI_COUNT, screen_data[i].ip * PICTURE_NUM_PER_SECTOR * 2,
+						(FLASH_WRITE_TYPE)(*(screen_data[i].data_value)));
+		}
+		i++;
+	}
+}
 
-// 	flash_erase_sector(SECTOR_NUM); //擦除扇区,擦一次只能写一次
-// 	while (strcmp(screen_data[i].data_name, "end") != 0)
-// 	{
-// 		if (screen_data[i].ip > 0)
-// 		{
-// 			flash_write(SECTOR_NUM, screen_data[i].ip * 4, (uint32)((*(screen_data[i].data_value)) * 100.0 + 0.5)); //四舍五入写入，防止float精度不够
-// 		}
-// 		i++;
-// 	}
-// }
-
-// void flash_Out()
-// {
-// 	int i = 0;
-// 	uint32 data = 0;
-
-// 	while (strcmp(screen_data[i].data_name, "end") != 0)
-// 	{
-// 		if (screen_data[i].ip > 0)
-// 		{
-// 			data = flash_read(SECTOR_NUM, screen_data[i].ip * 4, uint32);
-// 			*(screen_data[i].data_value) = (float)((double)data / 100.0);
-// 		}
-// 		i++;
-// 	}
-// }
+void readUIParameterFromFlash()
+{
+	int i = 0;
+	while (strcmp(screen_data[i].data_name, "end") != 0)
+	{
+		if (screen_data[i].ip >= 0)
+		{
+			*(screen_data[i].data_value) = (int)flash_read(SECTOR_FOR_UI_COUNT,
+														   screen_data[i].ip * PICTURE_NUM_PER_SECTOR * 2,
+														   FLASH_WRITE_TYPE);
+		}
+		i++;
+	}
+}
