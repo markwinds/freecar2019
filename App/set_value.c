@@ -1,6 +1,6 @@
 #include "include.h"
 #include "common.h"
-uint8 zbthhh = 0;
+uint8 zbthhh = 14;
 //ov7725_eagle_reg[45].val
 struct FlowValue flow_value[] =
     {

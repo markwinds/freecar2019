@@ -55,26 +55,32 @@ uint32 getCurvature(uint8 x1, uint8 y1, uint8 x2, uint8 y2, uint8 x3, uint8 y3)
 /*
 3*3滤波
 */
-void filter(uint8 *ans, uint8 *src)
+void filter(uint8 *ans, uint8 *src, uint8 filter_size)
 {
-    for (uint8 i = 0; i < 80; i++)
-    {
-        ans(0, i) = src(0, i);
-        ans(59, i) = src(59, i);
-    }
-    for (uint8 i = 0; i < 60; i++)
-    {
-        ans(i, 0) = src(i, 0);
-        ans(i, 79) = src(i, 79);
-    }
-    for (uint8 i = 1; i < 59; i++)
-    {
-        for (uint8 j = 1; j < 79; j++)
+    uint8 temp = filter_size >> 1;
+    for (uint8 i = 0; i < temp; i++)
+        for (uint8 j = 0; j < 80; j++)
         {
-            ans(i, j) = (src(i - 1, j - 1) + src(i - 1, j) + src(i - 1, j + 1) +
-                         src(i, j - 1) + src(i, j) + src(i, j + 1) +
-                         src(i + 1, j - 1) + src(i + 1, j) + src(i + 1, j + 1)) /
-                        5;
+            ans(i, j) = src(i, j);
+            ans(59 - i, j) = src(59 - i, j);
+        }
+    for (uint8 j = 0; j < temp; j++)
+        for (uint8 i = 0; i < 60; i++)
+        {
+            ans(i, j) = src(i, j);
+            ans(i, 79 - j) = src(i, 79 - j);
+        }
+    for (uint8 i = temp; i < 60 - temp; i++)
+    {
+        for (uint8 j = temp; j < 80 - temp; j++)
+        {
+            uint8 temp_sum = 0;
+            for (uint8 m = i - temp; m < i + temp + 1; m++)
+                for (uint8 n = j - temp; n < j + temp + 1; n++)
+                {
+                    temp_sum += src(m, n);
+                }
+            ans(i, j) = temp_sum / (((filter_size * filter_size) >> 1) + 1);
         }
     }
 }

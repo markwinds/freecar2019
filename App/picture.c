@@ -232,7 +232,7 @@ void showFilterPicture()
 	LCD_clear(WHITE);
 	readPictureToDisplayer(picture_now_id, buff);
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
-	filter(img, flash_img);
+	filter(img, flash_img,3);
 	img_compress(img, flash_imgbuff, CAMERA_SIZE);
 	LCDShowPicture(flash_imgbuff);
 }
@@ -252,7 +252,7 @@ void showFilterSobelPicture()
 	LCD_clear(WHITE);
 	readPictureToDisplayer(picture_now_id, buff);
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
-	filter(img, flash_img);
+	filter(img, flash_img,3);
 	sobel(flash_img, img);
 	img_compress(flash_img, flash_imgbuff, CAMERA_SIZE);
 	LCDShowPicture(flash_imgbuff);

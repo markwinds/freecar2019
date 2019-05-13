@@ -13,6 +13,8 @@ struct FlowValue
 
 extern struct FlowValue flow_value[];
 
+extern uint8 zbthhh;
+
 extern void showFlowValue();
 extern void nextFlowValue();
 extern void beforeFlowValue();
