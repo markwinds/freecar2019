@@ -27,6 +27,11 @@
 //存一幅图片要偏移的地址数
 #define OFFSET_PER_PICTURE (500 / PICTURE_NUM_PER_SECTOR)
 
+//顶部忽略的行数
+#define IGNORE_LINE_NUM 10
+#define DRAW_LINE_NUM (IGNORE_LINE_NUM - 1)
+#define DRAW_COLOUR RED
+
 #define readPictureToLCDDefault() readPictureToDisplayer(picture_now_id, LCD)
 #define readPictureToUARTDefault() readPictureToDisplayer(picture_now_id, UART)
 
@@ -48,6 +53,8 @@ struct DealPictureWay
 extern int picture_num; //存储图片的数量
 extern int picture_now_id;
 extern struct DealPictureWay *now_deal_picture_way;
+extern uint8 flash_imgbuff[CAMERA_SIZE]; //因为imgbuff是摄像头会直接操作的，所以这里重新建一个缓存区用于暂存数据
+extern uint8 flash_img[CAMERA_SIZE * 8]; //暂存解压图像的数据
 
 extern void writePictureToFlash();
 extern void readPictureToDisplayer(int picture_id, enum Displayer displayer);

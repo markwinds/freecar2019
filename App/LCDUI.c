@@ -125,17 +125,17 @@ Lcd_State *readNextPictureAndString(Lcd_State *pThis) //右
 
 /*---------------------------------------------read_picture状态的功能函数----------------------------------------------*/
 
-Lcd_State *sendPictureToUART(Lcd_State *pThis) //中 发送当前图片到串口
-{
-	readPictureToUARTDefault();
-	return pThis;
-}
-
-Lcd_State *readPictureToImgbuffShow(Lcd_State *pThis) //上
+Lcd_State *readPictureToImgbuffShow(Lcd_State *pThis) //中
 {
 	LCD_clear(WHITE);
 	openCamera();
 	return &imgbuff_show;
+}
+
+Lcd_State *sendPictureToUART(Lcd_State *pThis) //上 发送当前图片到串口
+{
+	readPictureToUARTDefault();
+	return pThis;
 }
 
 Lcd_State *savePicture(Lcd_State *pThis) //下
@@ -485,8 +485,8 @@ Lcd_State show_dealed_picture =
 };
 Lcd_State read_picture =
 	{
-		sendPictureToUART,		  //中	发送当前的图片
-		readPictureToImgbuffShow, //上
+		readPictureToImgbuffShow, //中	发送当前的图片
+		sendPictureToUART,		  //上
 		savePicture,			  //下
 		readBeforePicture,		  //左
 		readNextPicture			  //右

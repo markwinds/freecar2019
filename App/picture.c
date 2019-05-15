@@ -9,11 +9,16 @@ int picture_write_id = 0;		  //写入图片时，为图片分配的id,与picture
 uint8 flash_imgbuff[CAMERA_SIZE]; //因为imgbuff是摄像头会直接操作的，所以这里重新建一个缓存区用于暂存数据
 uint8 flash_img[CAMERA_SIZE * 8]; //暂存解压图像的数据
 
+void showFSFPicture();
+void showFFPicture();
+
 struct DealPictureWay deal_picture_way[] = {
 	{showOriginalPicture, "Origin"},
-	{showFilterPicture, "Filted"},
-	{showSobelPicture, "Sobeled"},
-	{showFilterSobelPicture, "F and S"},
+	{showFilterPicture, "F"},
+	//	{showSobelPicture, "Sobeled"},
+	{showFilterSobelPicture, "FS"},
+	{showFSFPicture, "FSF"},
+	//	{showFFPicture, "FF"},
 	{NULL, "end"}};
 
 struct DealPictureWay *now_deal_picture_way = deal_picture_way;
@@ -53,6 +58,7 @@ void deleteAllPicture()
 */
 void UARTSendPicture(uint8 *src)
 {
+	printf("\n\n\n\n\n");
 	img_extract(img, src, CAMERA_SIZE);
 	uint8 *p = img;
 	//输出不分割的完整图形
@@ -68,22 +74,23 @@ void UARTSendPicture(uint8 *src)
 		printf("\n");
 	}
 	printf("\n\n\n\n");
-	//输出带间隔的图像，方便看图像的时候数像素点
-	for (int i = 0; i < 60; i++)
-	{
-		if (i % 10 == 0)
-			printf("\n");
-		for (int j = 0; j < 80; j++)
-		{
-			if (*(p++) == 0)
-				printf("0");
-			else
-				printf("1");
-			if (j % 10 == 0)
-				printf(" ");
-		}
-		printf("\n");
-	}
+	// //输出带间隔的图像，方便看图像的时候数像素点
+	// *p = img;
+	// for (int i = 0; i < 60; i++)
+	// {
+	// 	if (i % 10 == 0)
+	// 		printf("\n");
+	// 	for (int j = 0; j < 80; j++)
+	// 	{
+	// 		if (j % 10 == 0)
+	// 			printf(" ");
+	// 		if (*(p++) == 0)
+	// 			printf("0");
+	// 		else
+	// 			printf("1");
+	// 	}
+	// 	printf("\n");
+	// }
 }
 
 /***********************************从flash读写图片*****************************************************/
@@ -195,6 +202,12 @@ void readPictureToDisplayer(int picture_id, enum Displayer displayer)
 	else if (displayer == UART)
 	{
 		UARTSendPicture(flash_imgbuff);
+		readPictureToDisplayer(picture_id, buff);
+		img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
+		filter(img, flash_img, LowPass, 3, AllPoint);
+		sobel(flash_img, img);
+		img_compress(flash_img, flash_imgbuff, CAMERA_SIZE);
+		UARTSendPicture(flash_imgbuff);
 	}
 	else if (displayer == buff)
 	{
@@ -225,6 +238,7 @@ void showOriginalPicture()
 	LCD_clear(WHITE);
 	readPictureToDisplayer(picture_now_id, buff);
 	LCDShowPicture(flash_imgbuff);
+	LCDShowLine(DRAW_LINE_NUM, DRAW_COLOUR);
 }
 
 void showFilterPicture()
@@ -232,9 +246,10 @@ void showFilterPicture()
 	LCD_clear(WHITE);
 	readPictureToDisplayer(picture_now_id, buff);
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
-	filter(img, flash_img,3);
+	filter(img, flash_img, LowPass, 3, AllPoint);
 	img_compress(img, flash_imgbuff, CAMERA_SIZE);
 	LCDShowPicture(flash_imgbuff);
+	LCDShowLine(DRAW_LINE_NUM, DRAW_COLOUR);
 }
 
 void showSobelPicture()
@@ -245,6 +260,7 @@ void showSobelPicture()
 	sobel(img, flash_img);
 	img_compress(img, flash_imgbuff, CAMERA_SIZE);
 	LCDShowPicture(flash_imgbuff);
+	LCDShowLine(DRAW_LINE_NUM, DRAW_COLOUR);
 }
 
 void showFilterSobelPicture()
@@ -252,10 +268,36 @@ void showFilterSobelPicture()
 	LCD_clear(WHITE);
 	readPictureToDisplayer(picture_now_id, buff);
 	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
-	filter(img, flash_img,3);
+	filter(img, flash_img, LowPass, 3, AllPoint);
 	sobel(flash_img, img);
 	img_compress(flash_img, flash_imgbuff, CAMERA_SIZE);
 	LCDShowPicture(flash_imgbuff);
+	LCDShowLine(DRAW_LINE_NUM, DRAW_COLOUR);
+}
+
+void showFSFPicture()
+{
+	LCD_clear(WHITE);
+	readPictureToDisplayer(picture_now_id, buff);
+	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
+	filter(img, flash_img, LowPass, 3, AllPoint);
+	sobel(flash_img, img);
+	filter(img, flash_img, HighPass, 5, WhitePoint);
+	img_compress(img, flash_imgbuff, CAMERA_SIZE);
+	LCDShowPicture(flash_imgbuff);
+	LCDShowLine(DRAW_LINE_NUM, DRAW_COLOUR);
+}
+
+void showFFPicture()
+{
+	LCD_clear(WHITE);
+	readPictureToDisplayer(picture_now_id, buff);
+	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
+	filter(img, flash_img, LowPass, 3, AllPoint);
+	filter(flash_img, img, LowPass, 3, AllPoint);
+	img_compress(flash_img, flash_imgbuff, CAMERA_SIZE);
+	LCDShowPicture(flash_imgbuff);
+	LCDShowLine(DRAW_LINE_NUM, DRAW_COLOUR);
 }
 
 /***********************************flash初始化*****************************************************/
@@ -265,6 +307,7 @@ void showFilterSobelPicture()
 */
 void initFlashs()
 {
+	//writeParameterToFlash();
 	readParameterFromFlash();
 	int reflash_num = picture_write_id % PICTURE_NUM_PER_SECTOR;
 	if (reflash_num)

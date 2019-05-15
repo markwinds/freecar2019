@@ -37,25 +37,36 @@ uint32 getRoot(uint32 a)
 传入3个点的坐标，计算曲率
 ab叉乘ac,右手定则，向外结果为正赛道左拐，反之右拐
 */
-uint32 getCurvature(uint8 x1, uint8 y1, uint8 x2, uint8 y2, uint8 x3, uint8 y3)
+int32 getCurvature(Site_t site[])
 {
-    uint32 x31 = (uint32)x3 - (uint32)x1;
-    uint32 x32 = (uint32)x3 - (uint32)x2;
-    uint32 x21 = (uint32)x2 - (uint32)x1;
-    uint32 y31 = (uint32)y3 - (uint32)y1;
-    uint32 y32 = (uint32)y3 - (uint32)y2;
-    uint32 y21 = (uint32)y2 - (uint32)y1;
-    uint32 den = getRoot((x21 * x21 + y21 * y21) * (x32 * x32 + y32 * y32) * (x31 * x31 + y31 * y31));
-    uint32 num = x21 * y31 - x31 * y21;
-    return num * 1000 / den;
+    uint32 x1 = (uint32)site[0].x;
+    uint32 x2 = (uint32)site[1].x;
+    uint32 x3 = (uint32)site[2].x;
+    uint32 y1 = (uint32)site[0].y;
+    uint32 y2 = (uint32)site[1].y;
+    uint32 y3 = (uint32)site[2].y;
+
+    uint32 x31 = x3 - x1;
+    uint32 x32 = x3 - x2;
+    uint32 x21 = x2 - x1;
+    uint32 y31 = y3 - y1;
+    uint32 y32 = y3 - y2;
+    uint32 y21 = y2 - y1;
+    uint32 den = getRoot((x21 * x21 + y21 * y21) * (x32 * x32 + y32 * y32) * (x31 * x31 + y31 * y31) / 10000);
+    int32 num = (int32)x21 * (int32)y31 - (int32)x31 * (int32)y21;
+    return num * 100 / ((int32)den);
 }
 
 /***********************************滤波算法*****************************************************/
 
 /*
-3*3滤波
+3*3滤波:
+filter_type
+0滤黑点
+1滤白点
+2滤黑白点
 */
-void filter(uint8 *ans, uint8 *src, uint8 filter_size)
+void filter(uint8 *ans, uint8 *src, FilterType filter_type, uint8 filter_size, FilterObject filter_object)
 {
     uint8 temp = filter_size >> 1;
     for (uint8 i = 0; i < temp; i++)
@@ -74,13 +85,22 @@ void filter(uint8 *ans, uint8 *src, uint8 filter_size)
     {
         for (uint8 j = temp; j < 80 - temp; j++)
         {
-            uint8 temp_sum = 0;
-            for (uint8 m = i - temp; m < i + temp + 1; m++)
-                for (uint8 n = j - temp; n < j + temp + 1; n++)
-                {
-                    temp_sum += src(m, n);
-                }
-            ans(i, j) = temp_sum / (((filter_size * filter_size) >> 1) + 1);
+            if (BlackPoint == filter_object && 0 == src(i, j) ||
+                WhitePoint == filter_object && 1 == src(i, j) ||
+                AllPoint == filter_object)
+            {
+                uint8 temp_sum = 0;
+                for (uint8 m = i - temp; m < i + temp + 1; m++)
+                    for (uint8 n = j - temp; n < j + temp + 1; n++)
+                    {
+                        temp_sum += src(m, n);
+                    }
+                ans(i, j) = temp_sum / (((filter_size * filter_size) >> 1) + 1);
+                if (filter_type == HighPass)
+                    ans(i, j) = ans(i, j) == 0 ? 1 : 0;
+            }
+            else
+                ans(i, j) = src(i, j);
         }
     }
 }
