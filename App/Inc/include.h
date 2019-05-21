@@ -37,5 +37,6 @@
 
 #pragma diag_suppress = Pe1665
 #pragma diag_suppress = Ta023
+#pragma diag_suppress = Ta022
 
 #endif //__INCLUDE_H__

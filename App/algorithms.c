@@ -1,6 +1,18 @@
 #include "common.h"
 #include "include.h"
 
+Coordinate points_coordinate[250];
+uint8 father[250]; //最后一个下标249
+uint8 point_num = 0;
+Coordinate point6[6];
+
+/***********************************坐标初始化*****************************************************/
+Coordinate getCoordinate(CoordinateType x, CoordinateType y)
+{
+    Coordinate temp = {x, y};
+    return temp;
+}
+
 /***********************************曲率算法*****************************************************/
 
 /*
@@ -9,15 +21,15 @@
 功能：取平方根
 a:要取平方根的数
 */
-uint32 getRoot(uint32 a)
+int32 getRoot(int32 a)
 {
-    uint32 left = 0;
-    uint32 right;
+    int32 left = 0;
+    int32 right;
     if (a > 40000) //防止mid * mid越界
         right = a / 200;
     else
         right = a;
-    uint32 mid;
+    int32 mid;
     while (left < right)
     {
         mid = (left + right) / 2;
@@ -37,24 +49,24 @@ uint32 getRoot(uint32 a)
 传入3个点的坐标，计算曲率
 ab叉乘ac,右手定则，向外结果为正赛道左拐，反之右拐
 */
-int32 getCurvature(Site_t site[])
+int32 getCurvature(Coordinate site[])
 {
-    uint32 x1 = (uint32)site[0].x;
-    uint32 x2 = (uint32)site[1].x;
-    uint32 x3 = (uint32)site[2].x;
-    uint32 y1 = (uint32)site[0].y;
-    uint32 y2 = (uint32)site[1].y;
-    uint32 y3 = (uint32)site[2].y;
+    int32 x1 = (int32)site[0].x;
+    int32 x2 = (int32)site[1].x;
+    int32 x3 = (int32)site[2].x;
+    int32 y1 = (int32)site[0].y;
+    int32 y2 = (int32)site[1].y;
+    int32 y3 = (int32)site[2].y;
 
-    uint32 x31 = x3 - x1;
-    uint32 x32 = x3 - x2;
-    uint32 x21 = x2 - x1;
-    uint32 y31 = y3 - y1;
-    uint32 y32 = y3 - y2;
-    uint32 y21 = y2 - y1;
-    uint32 den = getRoot((x21 * x21 + y21 * y21) * (x32 * x32 + y32 * y32) * (x31 * x31 + y31 * y31) / 10000);
-    int32 num = (int32)x21 * (int32)y31 - (int32)x31 * (int32)y21;
-    return num * 100 / ((int32)den);
+    int32 x31 = x3 - x1;
+    int32 x32 = x3 - x2;
+    int32 x21 = x2 - x1;
+    int32 y31 = y3 - y1;
+    int32 y32 = y3 - y2;
+    int32 y21 = y2 - y1;
+    int32 den = getRoot((x21 * x21 + y21 * y21) * (x32 * x32 + y32 * y32) * (x31 * x31 + y31 * y31) / 10000);
+    int32 num = x21 * y31 - x31 * y21;
+    return num * 100 / den;
 }
 
 /***********************************滤波算法*****************************************************/
@@ -134,6 +146,143 @@ void sobel(uint8 *ans, uint8 *src)
                 ans(i, j) = 1; //超过阈值，则判定为边缘
             else
                 ans(i, j) = 0;
+        }
+    }
+}
+
+/***********************************梯形校正算法*****************************************************/
+Coordinate getNewCoordinate(Coordinate site)
+{
+    CoordinateType x = site.x;
+    CoordinateType y = site.y;
+    Coordinate ans;
+    ans.x = x * TRAPEZOID_H / 60;
+    ans.y = (y - 40) * ((TRAPEZOID_B - TRAPEZOID_A) * (60 - x) / 60 + TRAPEZOID_A) / 40;
+    return ans;
+}
+
+/***********************************并查集判连续性*****************************************************/
+void initCheckAndSet()
+{
+    for (uint8 i = 0; i < 250; i++)
+    {
+        father[i] = i;
+    }
+    point_num = 1; //边缘点的id从1开始
+}
+
+void setPointId(uint8 *src)
+{
+    for (int i = 10; i < 52; i++)
+    {
+        for (int j = 1; j < 79; j++)
+        {
+            if (1 == src(i, j) && point_num < 250) //这里不能写<256，因为当循环结束时point_id的值是256的话会有很多地方内存超限
+            {
+                src(i, j) = point_num;
+                points_coordinate[point_num++] = getCoordinate((CoordinateType)i, (CoordinateType)j);
+            }
+        }
+    }
+}
+
+uint8 findFather(uint8 x)
+{
+    uint8 a = x, z;
+    while (x != father[x])
+    {
+        x = father[x];
+    }
+    while (a != father[a])
+    {
+        z = a;
+        a = father[a];
+        father[z] = x;
+    }
+    return x;
+}
+
+void Union(uint8 a, uint8 b)
+{
+    uint8 fa, fb;
+    fa = findFather(a);
+    fb = findFather(b);
+    if (fa != fb)
+    {
+        if (fa < fb)
+            father[fb] = fa;
+        else
+            father[fa] = fb;
+    }
+}
+
+/*
+id:输入边缘点的id编号
+*/
+void union9Point(uint8 id, uint8 *src)
+{
+    Coordinate point = points_coordinate[id];
+    for (int i = point.x - 1; i < point.x + 2; i++)
+    {
+        for (int j = point.y - 1; j < point.y + 2; j++)
+        {
+            if (src(i, j) != 0 && i > 9 && i < 52 && j > 0 && j < 79)
+                Union(src(i, j), id);
+        }
+    }
+}
+
+void unionPoints(uint8 *src)
+{
+    for (int i = 1; i < point_num; i++) //id从1开始
+    {
+        union9Point(i, src);
+    }
+}
+
+void get3PointCoordinate(uint8 point_id, int a)
+{
+    int num = 0;
+    int id[256];
+    for (int i = 1; i < point_num; i++)
+    {
+        if (findFather(i) == findFather(point_id))
+        {
+            id[num++] = i;
+        }
+    }
+    point6[a + 0] = points_coordinate[id[num >> 2]];
+    point6[a + 1] = points_coordinate[id[num >> 1]];
+    point6[a + 2] = points_coordinate[id[(num >> 2) * 3]];
+}
+
+void getPointForCurvature(uint8 *src)
+{
+    initCheckAndSet();
+    setPointId(src);
+    if (point_num < 251)
+    {
+        unionPoints(src);
+        for (int i = 51; i > 9; i--)
+        {
+            if (src(i, 5) != 0)
+            {
+                i = i;
+                get3PointCoordinate(src(i, 5), 0);
+                break;
+            }
+        }
+        for (int i = 51; i > 9; i--)
+        {
+            if (src(i, 75) != 0)
+            {
+                get3PointCoordinate(src(i, 5), 3);
+                break;
+            }
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            LCDShowBigPoint(point6[i], BLUE);
         }
     }
 }

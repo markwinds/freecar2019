@@ -4,7 +4,7 @@
 void find6Point(uint8 *src)
 {
     uint8 line_num[] = {26, 30, 38};
-    Site_t site[3];
+    Coordinate site[3];
     int32 temp_left = 0, temp_right = 0;
 
     uint8 flag = 1;
@@ -25,7 +25,21 @@ void find6Point(uint8 *src)
         site[s].y = j;
     }
     if (flag)
+    {
         temp_right = getCurvature(site);
+        Site_t site1;
+        site1.x = 60;
+        site1.y = 80;
+        LCDShowNum(site1, (uint32)(temp_right > 0 ? temp_right : -1 * temp_right));
+        site[0] = getNewCoordinate(site[0]);
+        site[1] = getNewCoordinate(site[1]);
+        site[2] = getNewCoordinate(site[2]);
+        temp_right = getCurvature(site);
+        site1.x = 60;
+        site1.y = 100;
+        LCDShowNum(site1, (uint32)(temp_right > 0 ? temp_right : -1 * temp_right));
+    }
+
     flag = 1;
     for (int s = 0; s < 3; s++)
     {
@@ -44,10 +58,18 @@ void find6Point(uint8 *src)
         site[s].y = j;
     }
     if (flag)
+    {
         temp_left = getCurvature(site);
-    site[0].x = 10;
-    site[0].y = 80;
-    LCDShowNum(site[0], (uint32)(temp_left > 0 ? temp_left : -1 * temp_left));
-    site[0].x = 60;
-    LCDShowNum(site[0], (uint32)(temp_right > 0 ? temp_right : -1 * temp_right));
+        Site_t site1;
+        site1.x = 10;
+        site1.y = 80;
+        LCDShowNum(site1, (uint32)(temp_left > 0 ? temp_left : -1 * temp_left));
+        site[0] = getNewCoordinate(site[0]);
+        site[1] = getNewCoordinate(site[1]);
+        site[2] = getNewCoordinate(site[2]);
+        temp_left = getCurvature(site);
+        site1.x = 10;
+        site1.y = 100;
+        LCDShowNum(site1, (uint32)(temp_left > 0 ? temp_left : -1 * temp_left));
+    }
 }

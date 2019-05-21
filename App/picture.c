@@ -11,6 +11,7 @@ uint8 flash_img[CAMERA_SIZE * 8]; //暂存解压图像的数据
 
 void showFSFPicture();
 void showFFPicture();
+void show3Point();
 
 struct DealPictureWay deal_picture_way[] = {
 	{showOriginalPicture, "Origin"},
@@ -19,6 +20,7 @@ struct DealPictureWay deal_picture_way[] = {
 	{showFilterSobelPicture, "FS"},
 	{showFSFPicture, "FSF"},
 	//	{showFFPicture, "FF"},
+	{show3Point, "3p"},
 	{NULL, "end"}};
 
 struct DealPictureWay *now_deal_picture_way = deal_picture_way;
@@ -206,7 +208,8 @@ void readPictureToDisplayer(int picture_id, enum Displayer displayer)
 		img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
 		filter(img, flash_img, LowPass, 3, AllPoint);
 		sobel(flash_img, img);
-		img_compress(flash_img, flash_imgbuff, CAMERA_SIZE);
+		filter(img, flash_img, HighPass, 5, WhitePoint);
+		img_compress(img, flash_imgbuff, CAMERA_SIZE);
 		UARTSendPicture(flash_imgbuff);
 	}
 	else if (displayer == buff)
@@ -298,6 +301,23 @@ void showFFPicture()
 	img_compress(flash_img, flash_imgbuff, CAMERA_SIZE);
 	LCDShowPicture(flash_imgbuff);
 	LCDShowLine(DRAW_LINE_NUM, DRAW_COLOUR);
+}
+
+void show3Point()
+{
+	LCD_clear(WHITE);
+	readPictureToDisplayer(picture_now_id, buff);
+	img_extract(flash_img, flash_imgbuff, CAMERA_SIZE);
+	filter(img, flash_img, LowPass, 3, AllPoint);
+	sobel(flash_img, img);
+	filter(img, flash_img, HighPass, 5, WhitePoint);
+	img_compress(img, flash_imgbuff, CAMERA_SIZE);
+	LCDShowPicture(flash_imgbuff);
+	// LCDShowLine(10, BLUE);
+	// LCDShowLine(26, RED);
+	// LCDShowLine(30, RED);
+	// LCDShowLine(38, RED);
+	getPointForCurvature(img);
 }
 
 /***********************************flash初始化*****************************************************/
