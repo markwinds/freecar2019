@@ -4,6 +4,4 @@
 #include "common.h"
 #include "include.h"
 
-extern void find6Point(uint8 *src);
-
 #endif //__CORE_H__

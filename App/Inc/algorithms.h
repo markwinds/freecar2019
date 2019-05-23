@@ -27,6 +27,12 @@ enum FilterObject
     BlackPoint
 };
 
+typedef enum CheckType
+{
+    Ln,
+    Col
+} CheckType;
+
 typedef struct Coordinate
 {
     CoordinateType x;
@@ -42,6 +48,7 @@ extern void filter(uint8 *ans, uint8 *src, FilterType filter_type, uint8 filter_
 extern void sobel(uint8 *ans, uint8 *src);
 extern Coordinate getNewCoordinate(Coordinate site);
 extern Coordinate getCoordinate(CoordinateType x, CoordinateType y);
-extern void getPointForCurvature(uint8 *src);
+extern int getPointForCurvature(uint8 *src);
+extern void showCurvature(uint8 *src);
 
 #endif //__ALGORITHMS_H__

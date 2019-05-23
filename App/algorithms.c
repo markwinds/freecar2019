@@ -5,6 +5,72 @@ Coordinate points_coordinate[250];
 uint8 father[250]; //最后一个下标249
 uint8 point_num = 0;
 Coordinate point6[6];
+uint8 useful_line[] = {10, 52};
+
+/***********************************循环查找*****************************************************/
+uint8 isNotZero(uint8 a) //判断条件成立的函数，当条件为真时，循环查找结束.当传入的值不为0时为真
+{
+    return a == 0 ? 0 : 1;
+}
+/*
+*/
+uint8 checkValueInSrc(uint8 *src, CheckType Ln_Col, int8 constant, uint8 begin, uint8 end, uint8 (*judge)(uint8 a))
+{
+    if (begin < end)
+    {
+        if (Ln_Col == Ln) //行不变
+        {
+            int j;
+            for (j = begin; j < end; j++)
+            {
+                if (judge(src(constant, j)) == 1)
+                {
+                    break;
+                }
+            }
+            return j;
+        }
+        else
+        {
+            int i;
+            for (i = begin; i < end; i++)
+            {
+                if (judge(src(i, constant)) == 1)
+                {
+                    break;
+                }
+            }
+            return i;
+        }
+    }
+    else
+    {
+        if (Ln_Col == Ln)
+        {
+            int j;
+            for (j = begin; j > end; j--)
+            {
+                if (judge(src(constant, j)) == 1)
+                {
+                    break;
+                }
+            }
+            return j;
+        }
+        else
+        {
+            int i;
+            for (i = begin; i > end; i--)
+            {
+                if (judge(src(i, constant)) == 1)
+                {
+                    break;
+                }
+            }
+            return i;
+        }
+    }
+}
 
 /***********************************坐标初始化*****************************************************/
 Coordinate getCoordinate(CoordinateType x, CoordinateType y)
@@ -173,9 +239,9 @@ void initCheckAndSet()
 
 void setPointId(uint8 *src)
 {
-    for (int i = 10; i < 52; i++)
+    for (uint8 i = useful_line[0]; i < useful_line[1]; i++) //这里改扫描的范围
     {
-        for (int j = 1; j < 79; j++)
+        for (int j = 1; j < 79; j++) //这里改扫描的范围
         {
             if (1 == src(i, j) && point_num < 250) //这里不能写<256，因为当循环结束时point_id的值是256的话会有很多地方内存超限
             {
@@ -226,7 +292,7 @@ void union9Point(uint8 id, uint8 *src)
     {
         for (int j = point.y - 1; j < point.y + 2; j++)
         {
-            if (src(i, j) != 0 && i > 9 && i < 52 && j > 0 && j < 79)
+            if (src(i, j) != 0 && i >= useful_line[0] && i < useful_line[1] && j > 0 && j < 79) //这里改扫描的范围
                 Union(src(i, j), id);
         }
     }
@@ -240,13 +306,17 @@ void unionPoints(uint8 *src)
     }
 }
 
+/*
+画出所给点所在连续边的曲率3点
+*/
 void get3PointCoordinate(uint8 point_id, int a)
 {
     int num = 0;
     int id[256];
     for (int i = 1; i < point_num; i++)
     {
-        if (findFather(i) == findFather(point_id))
+        //if (findFather(i) == findFather(point_id))
+        if (father[i] == father[point_id])
         {
             id[num++] = i;
         }
@@ -256,33 +326,110 @@ void get3PointCoordinate(uint8 point_id, int a)
     point6[a + 2] = points_coordinate[id[(num >> 2) * 3]];
 }
 
-void getPointForCurvature(uint8 *src)
+/*
+得到计算曲率的6点，并存放在point6数组中
+*/
+int getPointForCurvature(uint8 *src)
 {
+    uint8 check_col[] = {1, 78}; //查找两边边缘线的时候查找列
     initCheckAndSet();
     setPointId(src);
-    if (point_num < 251)
+    if (point_num >= 251)
     {
-        unionPoints(src);
-        for (int i = 51; i > 9; i--)
+        return -1; //点数过多返回-1
+    }
+    int ans = 0;
+    unionPoints(src);
+    for (uint8 h = 0; h < 2; h++)
+    {
+        uint8 temp;
+        temp = checkValueInSrc(src, Col, check_col[h], useful_line[1] - 1, useful_line[0] + 10, isNotZero); //左边列查找边缘
+        if (temp != useful_line[0] + 10)
         {
-            if (src(i, 5) != 0)
-            {
-                i = i;
-                get3PointCoordinate(src(i, 5), 0);
-                break;
-            }
+            get3PointCoordinate(src(temp, check_col[h]), h * 3);
+            ans += 1 + h;
         }
-        for (int i = 51; i > 9; i--)
+        else
         {
-            if (src(i, 75) != 0)
+            temp = checkValueInSrc(src, Ln, useful_line[1] - 1, h == 0 ? 1 : 78, h == 0 ? 78 : 1, isNotZero); //左边行查找边缘
+            if (temp != h == 0 ? 78 : 1)
             {
-                get3PointCoordinate(src(i, 5), 3);
-                break;
+                get3PointCoordinate(src(useful_line[1] - 1, temp), h * 3);
+                ans += 1 + h;
             }
-        }
-        for (int i = 0; i < 6; i++)
-        {
-            LCDShowBigPoint(point6[i], BLUE);
         }
     }
+
+    // for (uint8 h = 0; h < 2; h++)//h等于0时搜左3点，h为1时搜右3点
+    // {
+    //     uint8 flag = 0;
+    //     for (int i = useful_line[1] - 1; i >= useful_line[0] + 10; i--) //这里改扫描的范围
+    //     {
+    //         if (src(i, check_line[h]) != 0)
+    //         {
+    //             ans += h + 1;
+    //             flag = 1;
+    //             get3PointCoordinate(src(i, check_line[h]), h * 3);
+    //             break;
+    //         }
+    //     }
+    //     if (!flag)
+    //     {
+    //         if (h == 0)
+    //         {
+    //             for (uint8 j = 1; j < 79; j++)
+    //             {
+    //                 if (src(useful_line[1], j) != 0)
+    //                 {
+    //                     ans += h + 1;
+    //                     get3PointCoordinate(src(useful_line[1], j), h * 3);
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //         else
+    //         {
+    //             for (uint8 j = 79; j > 0; j--)
+    //             {
+    //                 if (src(useful_line[1], j) != 0)
+    //                 {
+    //                     ans += h + 1;
+    //                     get3PointCoordinate(src(useful_line[1], j), h * 3);
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    for (int i = 0; i < 6; i++)
+    {
+        LCDShowBigPoint(point6[i], BLUE);
+        point6[i] = getNewCoordinate(point6[i]);
+    }
+    return ans;
+}
+
+void showCurvature(uint8 *src)
+{
+    int success_flag = 0;
+    int32 left_curvature = -1;
+    int32 right_curvature = -1;
+    success_flag = getPointForCurvature(src);
+    switch (success_flag)
+    {
+    case 3: //两边都有曲率
+        left_curvature = getCurvature(point6);
+        right_curvature = getCurvature(point6 + 3);
+        break;
+    case 1: //左边有曲率
+        left_curvature = getCurvature(point6);
+        break;
+    case 2:
+        right_curvature = getCurvature(point6 + 3);
+        break;
+    default:
+        break;
+    }
+    LCDShowNumDefule(80, 20, left_curvature);
+    LCDShowNumDefule(80, 60, right_curvature);
 }
