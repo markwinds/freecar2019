@@ -19,9 +19,9 @@ using namespace std;
 //梯形的上底（长边）
 #define PUP 270 * PSIZE
 //梯形的下底（短边）
-#define PDOWN 5 * PSIZE
+#define PDOWN 25 * PSIZE
 //梯形的高
-#define PHIGH 250 * PSIZE
+#define PHIGH 150 * PSIZE
 
 #define src(i, j) *(src + 80 * (i) + j)
 #define p(i, j) *(p + 80 * (i) + j)

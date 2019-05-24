@@ -217,15 +217,15 @@ void sobel(uint8 *ans, uint8 *src)
 }
 
 /***********************************梯形校正算法*****************************************************/
-Coordinate getNewCoordinate(Coordinate site)
-{
-    CoordinateType x = site.x;
-    CoordinateType y = site.y;
-    Coordinate ans;
-    ans.x = x * TRAPEZOID_H / 60;
-    ans.y = (y - 40) * ((TRAPEZOID_B - TRAPEZOID_A) * (60 - x) / 60 + TRAPEZOID_A) / 40;
-    return ans;
-}
+// Coordinate getNewCoordinate(Coordinate site)
+// {
+//     CoordinateType x = site.x;
+//     CoordinateType y = site.y;
+//     Coordinate ans;
+//     ans.x = x * TRAPEZOID_H / 60;
+//     ans.y = (y - 40) * ((TRAPEZOID_B - TRAPEZOID_A) * (60 - x) / 60 + TRAPEZOID_A) / 40;
+//     return ans;
+// }
 
 /***********************************并查集判连续性*****************************************************/
 void initCheckAndSet()
@@ -307,6 +307,62 @@ void unionPoints(uint8 *src)
 }
 
 /*
+完成并查集操作
+*/
+int getCheckAndSet(uint8 *src)
+{
+    initCheckAndSet();
+    setPointId(src);
+    if (point_num >= 251)
+    {
+        return -1; //点数过多返回-1
+    }
+    unionPoints(src);
+    return 0;
+}
+
+/***********************************查找边缘3点算曲率*****************************************************/
+/*
+查找两边的边缘
+分别返回两边边缘的其中一个点的id，存放在point6的0和3位置中
+*/
+int findPointIdOfEdge(uint8 *src)
+{
+    uint8 check_col[] = {1, 78}; //查找两边边缘线的时候查找列
+    if (getCheckAndSet(src) == -1)
+    {
+        return -1; //点数过多，查找失败
+    }
+    int ans = 0;
+    for (uint8 h = 0; h < 2; h++)
+    {
+        uint8 temp;
+        temp = checkValueInSrc(src, Col, check_col[h], useful_line[1] - 1, useful_line[0] + 10, isNotZero); //左边列查找边缘
+        if (temp != useful_line[0] + 10)
+        {
+            point6[h * 3] = getCoordinate((CoordinateType)temp, (CoordinateType)check_col[h]);
+            ans += 1 + h;
+        }
+        else
+        {
+            temp = checkValueInSrc(src, Ln, useful_line[1] - 1, h == 0 ? 1 : 78, h == 0 ? 78 : 1, isNotZero); //左边行查找边缘
+            if (temp != h == 0 ? 78 : 1)
+            {
+                point6[h * 3] = getCoordinate((CoordinateType)(useful_line[1] - 1), (CoordinateType)temp);
+                ans += 1 + h;
+            }
+        }
+    }
+    if (ans == 3) //如果左右都找到边界，判断找到的是不是同一个
+    {
+        uint8 left_point_id = src(point6[0].x, point6[0].y);
+        uint8 right_point_id = src(point6[3].x, point6[3].y);
+        return father[left_point_id] == father[right_point_id] ? (point6[0].y > 39 ? 2 : 1) : 3;
+    }
+    return ans;
+}
+
+/*
 画出所给点所在连续边的曲率3点
 */
 void get3PointCoordinate(uint8 point_id, int a)
@@ -327,88 +383,37 @@ void get3PointCoordinate(uint8 point_id, int a)
 }
 
 /*
-得到计算曲率的6点，并存放在point6数组中
+得到计算曲率的6点，并存放在point6数组中，并在图像中显示6点
 */
 int getPointForCurvature(uint8 *src)
 {
-    uint8 check_col[] = {1, 78}; //查找两边边缘线的时候查找列
-    initCheckAndSet();
-    setPointId(src);
-    if (point_num >= 251)
+    int temp = findPointIdOfEdge(src);
+    if (temp == -1)
     {
-        return -1; //点数过多返回-1
+        return -1;
     }
-    int ans = 0;
-    unionPoints(src);
-    for (uint8 h = 0; h < 2; h++)
+    if (temp == 1 || temp == 3)
     {
-        uint8 temp;
-        temp = checkValueInSrc(src, Col, check_col[h], useful_line[1] - 1, useful_line[0] + 10, isNotZero); //左边列查找边缘
-        if (temp != useful_line[0] + 10)
-        {
-            get3PointCoordinate(src(temp, check_col[h]), h * 3);
-            ans += 1 + h;
-        }
-        else
-        {
-            temp = checkValueInSrc(src, Ln, useful_line[1] - 1, h == 0 ? 1 : 78, h == 0 ? 78 : 1, isNotZero); //左边行查找边缘
-            if (temp != h == 0 ? 78 : 1)
-            {
-                get3PointCoordinate(src(useful_line[1] - 1, temp), h * 3);
-                ans += 1 + h;
-            }
-        }
+        get3PointCoordinate(src(point6[0].x, point6[0].y), 0);
     }
-
-    // for (uint8 h = 0; h < 2; h++)//h等于0时搜左3点，h为1时搜右3点
-    // {
-    //     uint8 flag = 0;
-    //     for (int i = useful_line[1] - 1; i >= useful_line[0] + 10; i--) //这里改扫描的范围
-    //     {
-    //         if (src(i, check_line[h]) != 0)
-    //         {
-    //             ans += h + 1;
-    //             flag = 1;
-    //             get3PointCoordinate(src(i, check_line[h]), h * 3);
-    //             break;
-    //         }
-    //     }
-    //     if (!flag)
-    //     {
-    //         if (h == 0)
-    //         {
-    //             for (uint8 j = 1; j < 79; j++)
-    //             {
-    //                 if (src(useful_line[1], j) != 0)
-    //                 {
-    //                     ans += h + 1;
-    //                     get3PointCoordinate(src(useful_line[1], j), h * 3);
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //         else
-    //         {
-    //             for (uint8 j = 79; j > 0; j--)
-    //             {
-    //                 if (src(useful_line[1], j) != 0)
-    //                 {
-    //                     ans += h + 1;
-    //                     get3PointCoordinate(src(useful_line[1], j), h * 3);
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    for (int i = 0; i < 6; i++)
+    if (temp == 2)
     {
-        LCDShowBigPoint(point6[i], BLUE);
-        point6[i] = getNewCoordinate(point6[i]);
+        get3PointCoordinate(src(point6[3].x, point6[3].y), 3);
     }
-    return ans;
+    for (int i = 0; i < 3; i++)
+    {
+        LCDShowBigPoint(point6[i], temp == 1 || temp == 3 ? BLUE : RED);
+    }
+    for (int i = 3; i < 6; i++)
+    {
+        LCDShowBigPoint(point6[i], temp == 2 ? BLUE : RED);
+    }
+    return temp;
 }
 
+/*
+利用6点算出曲率并显示
+*/
 void showCurvature(uint8 *src)
 {
     int success_flag = 0;
@@ -432,4 +437,36 @@ void showCurvature(uint8 *src)
     }
     LCDShowNumDefule(80, 20, left_curvature);
     LCDShowNumDefule(80, 60, right_curvature);
+}
+
+/***********************************通过左右边缘得到偏差度*****************************************************/
+
+int getErrorFromEdge(uint8 *src)
+{
+    int temp = findPointIdOfEdge(src);
+    int left_id_father = 0;
+    int right_id_father = 0;
+    int sum = 0;
+    int num = 0;
+    if (temp == -1)
+    {
+        return -1;
+    }
+    if (temp == 1 || temp == 3)
+    {
+        left_id_father = father[src(point6[0].x, point6[0].y)];
+    }
+    if (temp == 2)
+    {
+        right_id_father = father[src(point6[3].x, point6[3].y)];
+    }
+    for (int i = 1; i < point_num; i++)
+    {
+        if (father[i] == left_id_father || father[i] == right_id_father)
+        {
+            sum += points_coordinate[i].y - 40;
+            num++;
+        }
+    }
+    return (sum << 6) / num;
 }
