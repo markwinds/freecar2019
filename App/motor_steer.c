@@ -2,6 +2,7 @@
 #include "include.h"
 
 int steerTable[101]; //将方向100等分
+int speed_different = 0;
 
 void initMotorSteer()
 {
@@ -37,6 +38,8 @@ void initMotorSteer()
 void setSteer(int dir)
 {
     dir += 50;
+    dir = dir < 0 ? 0 : dir;
+    dir = dir > 100 ? 100 : dir;
     ftm_pwm_duty(FTM0, FTM_CH6, steerTable[dir]);
 }
 

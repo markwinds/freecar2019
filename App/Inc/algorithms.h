@@ -51,5 +51,6 @@ extern Coordinate getCoordinate(CoordinateType x, CoordinateType y);
 extern int getPointForCurvature(uint8 *src);
 extern void showCurvature(uint8 *src);
 extern int getErrorFromEdge(uint8 *src);
+extern int getErrorFromLeftAndRight(uint8 *src);
 
 #endif //__ALGORITHMS_H__

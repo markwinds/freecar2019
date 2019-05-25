@@ -12,8 +12,9 @@ int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
 
 int zbt = 0;
+int test_speed = 2000;
 Screen_Data screen_data[] = {
-	{"M_KP", &(zbt), 1, 1},
+	{"speed", &(test_speed), 100, -1},
 	{"M_KI", &(zbt), 1, 2},
 	{"M_KD", &(zbt), 1, 3},
 
@@ -465,7 +466,7 @@ void UI_INIT()
 }
 
 /*----------------------------------------各种状态下对应的5个建的操作---------------------------------------*/
-/*光标停留在屏幕外，此时为等待模式*/
+
 Lcd_State imgbuff_show =
 	{
 		imgbuffShowToWaitMiddle,		//中

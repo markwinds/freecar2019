@@ -59,4 +59,8 @@ void updateUI();
 extern void flash_In();
 extern void flash_Out();
 
+/*--------------------------------------------------变量--------------------------------------------------*/
+
+extern int test_speed;
+
 #endif

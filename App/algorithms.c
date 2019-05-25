@@ -346,7 +346,7 @@ int findPointIdOfEdge(uint8 *src)
         else
         {
             temp = checkValueInSrc(src, Ln, useful_line[1] - 1, h == 0 ? 1 : 78, h == 0 ? 78 : 1, isNotZero); //左边行查找边缘
-            if (temp != h == 0 ? 78 : 1)
+            if (temp != (h == 0 ? 78 : 1))
             {
                 point6[h * 3] = getCoordinate((CoordinateType)(useful_line[1] - 1), (CoordinateType)temp);
                 ans += 1 + h;
@@ -359,6 +359,8 @@ int findPointIdOfEdge(uint8 *src)
         uint8 right_point_id = src(point6[3].x, point6[3].y);
         return father[left_point_id] == father[right_point_id] ? (point6[0].y > 39 ? 2 : 1) : 3;
     }
+    if (ans == 0)
+        return -1;
     return ans;
 }
 
@@ -396,8 +398,10 @@ int getPointForCurvature(uint8 *src)
     {
         get3PointCoordinate(src(point6[0].x, point6[0].y), 0);
     }
-    if (temp == 2)
+    if (temp == 2 || temp == 3)
     {
+        // LCDShowNumDefule(80, 20, (int32)point6[3].x);
+        // LCDShowNumDefule(80, 60, (int32)point6[3].y);
         get3PointCoordinate(src(point6[3].x, point6[3].y), 3);
     }
     for (int i = 0; i < 3; i++)
@@ -406,7 +410,7 @@ int getPointForCurvature(uint8 *src)
     }
     for (int i = 3; i < 6; i++)
     {
-        LCDShowBigPoint(point6[i], temp == 2 ? BLUE : RED);
+        LCDShowBigPoint(point6[i], temp == 2 || temp == 3 ? BLUE : RED);
     }
     return temp;
 }
@@ -441,6 +445,9 @@ void showCurvature(uint8 *src)
 
 /***********************************通过左右边缘得到偏差度*****************************************************/
 
+/*
+弃用
+*/
 int getErrorFromEdge(uint8 *src)
 {
     int temp = findPointIdOfEdge(src);
@@ -456,7 +463,7 @@ int getErrorFromEdge(uint8 *src)
     {
         left_id_father = father[src(point6[0].x, point6[0].y)];
     }
-    if (temp == 2)
+    if (temp == 2 || temp == 3)
     {
         right_id_father = father[src(point6[3].x, point6[3].y)];
     }
@@ -469,4 +476,27 @@ int getErrorFromEdge(uint8 *src)
         }
     }
     return (sum << 6) / num;
+}
+
+/***********************************通过左右扫边补线得到偏差度*****************************************************/
+int getErrorFromLeftAndRight(uint8 *src)
+{
+    int sum = 0;
+    int num = 0;
+    int mid = 40;
+    for (int i = useful_line[1] - 1; i >= useful_line[0]; i--)
+    {
+        int left = checkValueInSrc(src, Ln, i, mid, 0, isNotZero);
+        int right = checkValueInSrc(src, Ln, i, mid, 79, isNotZero);
+        if (left == 0 && right == 79)
+        {
+            continue;
+        }
+        mid = (left + right) >> 1;
+        left = left != 0 ? left : right - 60;
+        right = right != 79 ? right : left + 60;
+        sum += (left + right) - 80;
+        num++;
+    }
+    return (sum << 3) / num + 42;
 }
