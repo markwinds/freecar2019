@@ -17,7 +17,7 @@ void readFileToSrc()
 	fp.open("road2.txt");
 	for (int i = 0; i < 60; i++)
 	{
-		uchar* p = src.ptr<uchar>(i);
+		uchar *p = src.ptr<uchar>(i);
 		for (int j = 0; j < 80; j++)
 		{
 			fp >> p[j];
@@ -56,19 +56,19 @@ Mat getBigPicture(Mat img, int Ln, int Col)
 	int h = 0;
 	for (int i = 0; i < ans.rows; i++)
 	{
-		uchar* p = ans.ptr<uchar>(i);
+		uchar *p = ans.ptr<uchar>(i);
 		for (int j = 0; j < ans.cols; j++)
 		{
 			int x = (int)(point_site_in_new_picture[h].x + 0.5);
 			int y = (int)(point_site_in_new_picture[h++].y + 0.5);
-			if (x >= 0 && y >= 0&&x<img.rows&&y<img.cols)
+			if (x >= 0 && y >= 0 && x < img.rows && y < img.cols)
 				p[j] = img(x, y);
 		}
 	}
 	return ans;
 }
 
-/*
+/**
 输入小图和大图的尺寸，以大图的形式显示
 */
 void showBigPicture(Mat img, int Ln, int Col)
@@ -78,7 +78,7 @@ void showBigPicture(Mat img, int Ln, int Col)
 	waitKey();
 }
 
-/*
+/**
 得到方形的左右下边界放入对应的数组
 */
 void getBorder()
@@ -146,7 +146,7 @@ void getBorder()
 	{
 		int x = left_points[i].x;
 		int y = left_points[i].y;
-		border_picture.at<uchar>(x,y) = 255;
+		border_picture.at<uchar>(x, y) = 255;
 	}
 	for (int i = 0; i < right_points.size(); i++)
 	{
@@ -161,10 +161,8 @@ void getBorder()
 		border_picture.at<uchar>(x, y) = 0;
 	}
 	show_pictures_name.push_back("边缘处理图片");
-	show_pictures.push_back(getBigPicture(border_picture,60*3,80*3) );
+	show_pictures.push_back(getBigPicture(border_picture, 60 * 3, 80 * 3));
 }
-
-
 
 void showPicture()
 {
@@ -175,3 +173,10 @@ void showPicture()
 	waitKey();
 }
 
+void savePicture()
+{
+	for (int i = 0; i < show_pictures.size(); i++)
+	{
+		imwrite(show_pictures_name[i] + ".jpg", show_pictures[i]);
+	}
+}
