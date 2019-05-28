@@ -1,13 +1,5 @@
-#ifndef _BP_H
-#define _BP_H
-
 #pragma once
-#include <iostream>
-#include <vector>
-#include <opencv2/highgui.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/opencv.hpp>
+#include "include.h"
 
 using namespace cv;
 using namespace std;
@@ -65,4 +57,3 @@ extern int updatePicture(int L_num, int C_num);
 extern void setK1K2ForPicture1();
 extern char picture1[60][80];
 
-#endif

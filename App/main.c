@@ -10,7 +10,7 @@ void main()
 	led_init(LED3);
 	UI_INIT();
 	initUart();
-	initMotorSteer();
+	//initMotorSteer();
 	Quad_Init();
 	LCD_init();
 	camera_init(imgbuff);
