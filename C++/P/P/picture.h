@@ -19,3 +19,4 @@ extern void showBigPicture(Mat img, int Ln, int Col);
 extern void showPicture();
 extern void savePicture();
 extern void getPPicture();
+extern Mat getBigPicture(Mat img, int Ln, int Col);

@@ -6,8 +6,9 @@ int main()
 	readFileToSrc();
 	getBorder();
 	getK();
-	//getPPicture();
+	getPPicture();
+	getTable();
+	savePicture();
 	showPicture();
-	//savePicture();
 	return 0;
 }
