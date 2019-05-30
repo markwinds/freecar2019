@@ -17,3 +17,4 @@ extern Mat B_to_P;
 
 extern void getK();
 extern void getTable(int s1 = k1, int s2 = k2, Mat tran_matrix = B_to_P);
+extern void fuckYou();
