@@ -11,6 +11,12 @@ int B_picture_size_old[] = {75, 110};						  //初始化B图的大小
 Mat B_to_P;													  //B图到P图的转化矩阵
 Mat B_picture;												  //存放B图
 bool fuck_K = false;										  //如果B图大小重构成功为false，重构失败为true
+Mat P_to_B;
+//vector<Point2f> point_B_O;
+
+Point2f relocate_point;
+int P_picture_size[2] = { 0,0 };
+vector<Point2f> point_O_B, point_B_P, point_O_P, point_B_O, point_P_B, point_P_O;
 
 /*************************************************这操蛋的B图坐标转化***********************************************************************/
 int getBToOCoordinate(double s1, double s2, int x, int y, int type)
@@ -183,6 +189,11 @@ void getBPicture()
 			{
 				uchar temp = src(x0, y0) == '0' ? 100 : 160;
 				B_picture.at<uchar>(i, j) = temp;
+				point_B_O.push_back(Point(x0, y0));
+			}
+			else
+			{
+				point_B_O.push_back(Point(-1, -1));
 			}
 		}
 	}
@@ -242,7 +253,7 @@ void getK()
 */
 void getPPicture()
 {
-	float P_picture_size = 100;
+	float P_picture_size = 60;
 	vector<Point2f> B_points(4);
 	//因为B图的size可能被改变，所以这里要更新坐标。比如在旧图中23,12代表左上角边缘点，因为新图变大，左上角的坐标也会改变
 	int x = B_left_points[0].x - B_picture_size_old[0] / 2 + B_picture_size[0] / 2;
@@ -264,6 +275,8 @@ void getPPicture()
 	P_points[3] = Point2f(0, P_picture_size);
 
 	B_to_P = getPerspectiveTransform(B_points, P_points);
+	P_to_B = getPerspectiveTransform(P_points, B_points);
+	perspectiveTransform(Point(20.0,0.0), relocate_point, B_to_P);
 	vector<Point2f> point, point_site_in_new_picture;
 	for (int i = 0; i < B_picture_size[0]; i++)
 	{
@@ -311,6 +324,8 @@ void getPPicture()
 	//waitKey();
 	show_pictures_name.push_back("校正结果");
 	show_pictures.push_back(P_picture);
+
+
 }
 
 /*************************************************校正表的处理***********************************************************************/
@@ -483,21 +498,74 @@ void getTable(int s1, int s2, Mat tran_matrix)
 	show_pictures_name.push_back("校正表直接映射");
 	show_pictures.push_back(table_picture);
 
-	/*打印校正表*/
-	printf("O_to_P_table[60][80]={");
-	for (int i = 0; i < 4800; i++)
+	vector<Point2f> point1, point2;
+	for (int i = -400; i < 500 - 400; i++)
 	{
-		if (i % 10 == 0)
+		for (int j = -200; j < 500 - 200; j++)
 		{
-			printf("\n");
-		}
-		int x = (int)P_points[i].x;
-		int y = (int)P_points[i].y;
-		printf("{%d, %d}", x, y);
-		if (i != 4799)
-		{
-			printf(", ");
+			point1.push_back(Point(i, j));
 		}
 	}
-	printf("}");
+	perspectiveTransform(point1, point2, P_to_B);
+	for (int i = 0; i < 500 ; i++)
+	{
+		for (int j = 0; j < 500 ; j++)
+		{
+			int x = (int)point2[i * 500 + j].x;
+			int y = (int)point2[i * 500 + j].y;
+			if (x >= 0 && y >= 0 && x < B_picture_size[0] && y < B_picture_size[1])
+			{
+				point2[i * 500 + j].x = point_B_O[x * B_picture_size[1] + y].x;
+				point2[i * 500 + j].y = point_B_O[x * B_picture_size[1] + y].y;
+			}
+			else
+			{
+				point2[i * 500 + j].x = -1;
+				point2[i * 500 + j].y = -1;
+			}
+		}
+	}
+
+	/*打印校正表*/
+	//printf("int16 O_to_P_table[60][80][2]={");
+	//for (int i = 0; i < 4800; i++)
+	//{
+	//	if (i % 10 == 0)
+	//	{
+	//		printf("\n");
+	//	}
+	//	int x = (int)P_points[i].x;
+	//	int y = (int)P_points[i].y;
+	//	/*x = (abs(x) > 1000) ? 0 : x;
+	//	y = (abs(y) > 1000) ? 0 : y;*/
+	//	printf("%d, %d", x, y);
+	//	if (i != 4799)
+	//	{
+	//		printf(", ");
+	//	}
+	//}
+	//printf("};");
+
+	printf("int16 P_O_table[500][500][2]={");
+	for (int i = 0; i < 500; i++)
+	{
+		for (int j = 0; j < 500; j++)
+		{
+			int x = (int)point2[i * 500 + j].x;
+			int y = (int)point2[i * 500 + j].y;
+			/*x = (abs(x) > 1000) ? 0 : x;
+			y = (abs(y) > 1000) ? 0 : y;*/
+			printf("%d, %d", x, y);
+			if (i * 500 + j < 250000)
+			{
+				printf(", ");
+			}
+		}
+		//if (i % 10 == 0)
+		//{
+		//	printf("\n");
+		//}
+
+	}
+	printf("};");
 }

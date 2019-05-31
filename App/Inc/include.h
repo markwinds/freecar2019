@@ -33,6 +33,7 @@
 #include "picture.h"           //flash操作
 #include "set_value.h"         //在摄像头的界面内修改数值
 #include "core.h"              //图像处理
+#include "table.h"             //校正表
 //#include "esp.h"         //无线模块
 
 #pragma diag_suppress = Pe1665

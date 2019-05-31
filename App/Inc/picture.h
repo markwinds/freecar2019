@@ -72,5 +72,6 @@ extern void showOriginalPicture();
 extern void showFilterSobelPicture();
 extern void writeUIParameterToFlash();
 extern void readUIParameterFromFlash();
+extern void sendPictureToPC(uint8 *pic);
 
 #endif

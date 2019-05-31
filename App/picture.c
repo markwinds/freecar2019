@@ -403,3 +403,14 @@ void readUIParameterFromFlash()
 		i++;
 	}
 }
+
+/***********************************车与电脑*****************************************************/
+void sendPictureToPC(uint8 *pic)
+{
+	uint8 *p = pic;
+	for (int i = 0; i < 4800; i++)
+	{
+		int data = *(p++);
+		printf("%d#", data);
+	}
+}

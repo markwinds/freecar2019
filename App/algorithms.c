@@ -117,6 +117,10 @@ ab叉乘ac,右手定则，向外结果为正赛道左拐，反之右拐
 */
 int32 getCurvature(Coordinate site[])
 {
+    site[0] = getNewCoordinate(site[0]);
+    site[1] = getNewCoordinate(site[1]);
+    site[2] = getNewCoordinate(site[2]);
+
     int32 x1 = (int32)site[0].x;
     int32 x2 = (int32)site[1].x;
     int32 x3 = (int32)site[2].x;
@@ -130,7 +134,11 @@ int32 getCurvature(Coordinate site[])
     int32 y31 = y3 - y1;
     int32 y32 = y3 - y2;
     int32 y21 = y2 - y1;
-    int32 den = getRoot((x21 * x21 + y21 * y21) * (x32 * x32 + y32 * y32) * (x31 * x31 + y31 * y31) / 10000);
+    int32 temp1 = getRoot((x21 * x21 + y21 * y21) / 100);
+    int32 temp2 = getRoot((x32 * x32 + y32 * y32) / 100);
+    int32 temp3 = getRoot((x31 * x31 + y31 * y31) / 100);
+    //int32 den = getRoot((x21 * x21 + y21 * y21) * (x32 * x32 + y32 * y32) * (x31 * x31 + y31 * y31) / 10000);
+    int32 den = temp1 * temp2 * temp3;
     int32 num = x21 * y31 - x31 * y21;
     return num * 100 / den;
 }
@@ -226,6 +234,13 @@ void sobel(uint8 *ans, uint8 *src)
 //     ans.y = (y - 40) * ((TRAPEZOID_B - TRAPEZOID_A) * (60 - x) / 60 + TRAPEZOID_A) / 40;
 //     return ans;
 // }
+Coordinate getNewCoordinate(Coordinate site)
+{
+    Coordinate temp;
+    temp.x = O_to_P_table[site.x][site.y][0];
+    temp.y = O_to_P_table[site.x][site.y][1];
+    return temp;
+}
 
 /***********************************并查集判连续性*****************************************************/
 void initCheckAndSet()

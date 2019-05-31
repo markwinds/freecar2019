@@ -1,7 +1,7 @@
 #pragma once
 #include "include.h"
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 typedef struct PointCount
@@ -12,9 +12,9 @@ typedef struct PointCount
 }PointCount;
 
 extern int k1 , k2 ;									
-extern Mat B_to_P;
+extern cv::Mat B_to_P;
 
 
 extern void getK();
-extern void getTable(int s1 = k1, int s2 = k2, Mat tran_matrix = B_to_P);
-extern void fuckYou();
+extern void getTable(int s1 = k1, int s2 = k2, cv::Mat tran_matrix = B_to_P);
+//extern void fuckYou();

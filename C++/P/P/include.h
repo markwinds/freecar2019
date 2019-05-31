@@ -11,4 +11,6 @@
 #include <opencv2/opencv.hpp>
 #include "picture.h"
 #include "algorithms.h"
+#include "SerialPort.h"
+#include "O_P_table.h"
 //#include "BP.h"
