@@ -16,7 +16,8 @@ int main()
 	//savePicture();
 	//showPicture();
 
-	getPictureFromCar(5);
+	//getPictureFromCar(4);
+	getDataAsServer();
 
 	return 0;
 }

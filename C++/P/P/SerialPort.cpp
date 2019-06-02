@@ -26,11 +26,11 @@
 bool CSerialPort::s_bExit = false;
 /** 当串口无数据时,sleep至下次查询间隔的时间,单位:秒 */
 const UINT SLEEP_TIME_INTERVAL = 5;
-int my_picture_rows=500;
-int my_picture_cols = 500;
-int my_picture_size = my_picture_rows * my_picture_cols;
+//int my_picture_rows=500;
+//int my_picture_cols = 500;
+//int my_picture_size = my_picture_rows * my_picture_cols;
 int my_picture_data_count=0;
-cv::Mat my_pictures = cv::Mat::zeros(my_picture_rows, my_picture_cols, CV_8UC3);
+cv::Mat my_pictures;
 //cv::Mat my_pictures_b = cv::Mat::zeros(my_picture_rows, my_picture_cols, CV_8UC1);
 //cv::Mat my_pictures_g = cv::Mat::zeros(my_picture_rows, my_picture_cols, CV_8UC1);
 //cv::Mat my_pictures_r = cv::Mat::zeros(my_picture_rows, my_picture_cols, CV_8UC1);
@@ -369,20 +369,48 @@ bool CSerialPort::WriteData(unsigned char* pData, unsigned int length)
 
 void showMyPicture()
 {
-	my_pictures= cv::Mat::zeros(my_picture_rows, my_picture_cols, CV_8UC1);
+	my_pictures= cv::Mat::zeros(P_picture_size[0], P_picture_size[1], CV_8UC3);
 	for (int i = 0; i < 60; i++)
 	{
 		for (int j = 0; j < 80; j++)
 		{
 			int x = O_P_table[i][j][0];
 			int y = O_P_table[i][j][1];
-			if (x >= 0 && y >= 0 && x < my_picture_rows && y < my_picture_cols)
+			if (x >= 0 && y >= 0 && x < P_picture_size[0] && y < P_picture_size[1])
 			{
-				my_pictures.at<uchar>(x, y) = origin_picture[i*80+j];
+				if (origin_picture[i * 80 + j] == 0)
+					my_pictures.at<cv::Vec3b>(x, y)[0] = 255;
+				else
+				{
+					my_pictures.at<cv::Vec3b>(x, y)[0] = 255;
+					my_pictures.at<cv::Vec3b>(x, y)[1] = 255;
+					my_pictures.at<cv::Vec3b>(x, y)[2] = 255;
+				}
 			}
 		}
 	}
-	cv::imshow("My picture",my_pictures);
+	cv::imshow("OP", my_pictures);
+	my_pictures = cv::Mat::zeros(P_picture_size[0], P_picture_size[1], CV_8UC3);
+	for (int i = 0; i < P_picture_size[0]; i++)
+	{
+		for (int j = 0; j < P_picture_size[1]; j++)
+		{
+			int x = P_O_table[i][j][0];
+			int y = P_O_table[i][j][1];
+			if (x >0)
+			{
+				if (origin_picture[x * 80 + y] == 0)
+					my_pictures.at<cv::Vec3b>(i, j)[0] = 255;
+				else
+				{
+					my_pictures.at<cv::Vec3b>(i, j)[0] = 255;
+					my_pictures.at<cv::Vec3b>(i, j)[1] = 255;
+					my_pictures.at<cv::Vec3b>(i, j)[2] = 255;
+				}
+			}
+		}
+	}
+	cv::imshow("PO", my_pictures);
 	cv::waitKey(1);
 }
 
@@ -402,7 +430,7 @@ void getDataToPicture(char *p)
 		int data = atoi(p);
 		if (my_picture_data_count < 4800)
 		{
-			origin_picture[my_picture_data_count++] = (uchar)data == 0 ? 180 : 255;
+			origin_picture[my_picture_data_count++] = (uchar)data;
 		}
 		else
 		{

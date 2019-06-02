@@ -407,10 +407,12 @@ void readUIParameterFromFlash()
 /***********************************车与电脑*****************************************************/
 void sendPictureToPC(uint8 *pic)
 {
+	printf("start#");
 	uint8 *p = pic;
 	for (int i = 0; i < 4800; i++)
 	{
 		int data = *(p++);
 		printf("%d#", data);
 	}
+	printf("end#");
 }
