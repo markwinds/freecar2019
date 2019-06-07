@@ -3,6 +3,7 @@
 
 void waitToDo()
 {
+    led_turn(LED0);
     /*执行命令行*/
     if (uart4_to_do_flag)
     {
@@ -15,5 +16,9 @@ void waitToDo()
     {
         updateUI();
         key_on = 0;
+    }
+    if (p_current_state == &show_ADC_value)
+    {
+        showADCVaule();
     }
 }

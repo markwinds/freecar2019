@@ -79,6 +79,13 @@ Lcd_State *takePhoto(Lcd_State *pThis) //左
 	return pThis;
 }
 
+Lcd_State *imgbuffShowToShowADCvalue(Lcd_State *pThis)
+{
+	closeCamera();
+	LCD_clear(WHITE);
+	return &show_ADC_value;
+}
+
 Lcd_State *imgbuffShowToSetVaule(Lcd_State *pThis) //右
 {
 	showFlowValue();
@@ -360,6 +367,15 @@ Lcd_State *rightSetVaule(Lcd_State *pThis) //右
 	return pThis;
 }
 
+/*---------------------------------------------show_ADC_value----------------------------------------------*/
+
+Lcd_State *showADCVauleToImgbuffShow(Lcd_State *pThis)
+{
+	LCD_clear(WHITE);
+	openCamera();
+	return &imgbuff_show;
+}
+
 /*---------------------------------------------do nothing----------------------------------------------*/
 
 Lcd_State *doNothing(Lcd_State *pThis) //忽略按键操作，返回原来的状态即保持状态不变
@@ -472,8 +488,9 @@ Lcd_State imgbuff_show =
 		imgbuffShowToWaitMiddle,		//中
 		imgbuffShowToShowDealedPicture, //上 进入显示
 		imgbuffShowToReadPicture,		//下
-		takePhoto,						//左
-		imgbuffShowToSetVaule			//右
+		//takePhoto,						//左
+		imgbuffShowToShowADCvalue,
+		imgbuffShowToSetVaule //右
 };
 //显示处理过的图像
 Lcd_State show_dealed_picture =
@@ -515,4 +532,12 @@ Lcd_State set_value =
 		downSetVaule,   //下
 		leftSetVaule,   //左
 		rightSetVaule   //右
+};
+Lcd_State show_ADC_value =
+	{
+		showADCVauleToImgbuffShow, //中
+		doNothing,				   //上
+		doNothing,				   //下
+		doNothing,				   //左
+		doNothing				   //右
 };

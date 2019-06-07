@@ -38,8 +38,8 @@ typedef struct Lcd_State //状态结构体
 } Lcd_State;
 
 /*------------------------------------------------全局变量---------------------------------------------*/
-extern Lcd_State wait_middle, normal_page, imgbuff_show, read_picture, show_dealed_picture, set_value; //lcd等待按键时的4种状态
-extern Lcd_State *p_current_state;																	   //指向当前状态的指针
+extern Lcd_State wait_middle, normal_page, imgbuff_show, read_picture, show_dealed_picture, set_value, show_ADC_value; //lcd等待按键时的4种状态
+extern Lcd_State *p_current_state;																					   //指向当前状态的指针
 
 extern int page;				  //ui当前所在页
 extern int current_row;			  //ui当前所在行

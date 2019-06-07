@@ -18,16 +18,16 @@ void main()
 
 	while (1)
 	{
-		led_turn(LED0);
+
 		// setSpeedLeft(test_speed + speed_different);
 		//setSpeedRight(test_speed);
 		// DELAY_MS(20);
 		waitToDo();
 
-		int32 error = getSteerPwmFromADCError();
-		setSteer(error);
-		setSpeedLeft(test_speed);
-		setSpeedRight(test_speed);
+		// int32 error = getSteerPwmFromADCError();
+		// setSteer(error);
+		// setSpeedLeft(test_speed);
+		// setSpeedRight(test_speed);
 
 		// showADCVaule();
 
