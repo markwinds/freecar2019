@@ -15,13 +15,15 @@ void main()
 	LCD_init();
 	//camera_init(imgbuff);
 	initADC();
+	initBuzzer();
 
 	while (1)
 	{
 
 		// setSpeedLeft(test_speed + speed_different);
 		//setSpeedRight(test_speed);
-		// DELAY_MS(20);
+		DELAY_MS(2000);
+		tellMeRoadType(circle);
 		waitToDo();
 
 		// int32 error = getSteerPwmFromADCError();

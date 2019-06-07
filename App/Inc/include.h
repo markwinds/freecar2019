@@ -37,6 +37,7 @@
 #include "table.h"             //校正表
 #include "adc.h"               //电磁采集
 #include "pid.h"               //pid控制
+#include "buzzer.h"            //蜂鸣器
 //#include "esp.h"         //无线模块
 
 #pragma diag_suppress = Pe1665
