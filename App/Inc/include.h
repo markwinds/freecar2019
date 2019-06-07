@@ -13,6 +13,7 @@
 #include "MK60_lptmr.h" //低功耗定时器(延时)
 #include "MK60_pit.h"   //PIT
 #include "MK60_FLASH.h" //FLASH
+#include "MK60_adc.h"
 
 #include "VCAN_LED.H" //LED
 #include "VCAN_KEY.H" //KEY
@@ -34,6 +35,8 @@
 #include "set_value.h"         //在摄像头的界面内修改数值
 #include "core.h"              //图像处理
 #include "table.h"             //校正表
+#include "adc.h"               //电磁采集
+#include "pid.h"               //pid控制
 //#include "esp.h"         //无线模块
 
 #pragma diag_suppress = Pe1665

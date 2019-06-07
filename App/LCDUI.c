@@ -12,11 +12,11 @@ int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
 
 int zbt = 0;
-int test_speed = 2000;
+int test_speed = 1300;
 Screen_Data screen_data[] = {
 	{"speed", &(test_speed), 100, -1},
-	{"M_KI", &(zbt), 1, 2},
-	{"M_KD", &(zbt), 1, 3},
+	{"PPP", &(ADC_pid.kp), 2, -1},
+	{"DDD", &(ADC_pid.kd), 2, -1},
 
 	{"enM", &(zbt), 1, 0}, //使能电机
 	{"speed", &(zbt), 1, 4},
@@ -459,8 +459,8 @@ void UI_INIT()
 	port_init(PTD12, ALT1 | IRQ_FALLING | PULLUP); //右
 	port_init(PTD11, ALT1 | IRQ_FALLING | PULLUP); //左
 	port_init(PTD10, ALT1 | IRQ_FALLING | PULLUP); //上
-	port_init(PTD7, ALT1 | IRQ_FALLING | PULLUP);  //flash按键
-	enable_irq(PORTD_IRQn);						   //使能d对应的端口也就是按键的port
+	//port_init(PTD7, ALT1 | IRQ_FALLING | PULLUP);  //flash按键
+	enable_irq(PORTD_IRQn); //使能d对应的端口也就是按键的port
 	set_vector_handler(PORTD_VECTORn, PORTD_IRQHandler);
 	initFlashs();
 }

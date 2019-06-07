@@ -21,10 +21,10 @@
 /*---------------------------------------------状态模式的一些结构体---------------------------------------*/
 typedef struct Screen_Data //传参结构体,ui显示数据的结构体
 {
-	char *data_name; //参数名称
-	int *data_value; //参数值
-	int icrement;	//参数累加数 如果是99就是on\off
-	int ip;			 //是否存放入flash的标志位,为负数时表示该参数不写入flash，为正数时表示存储扇区的偏移地址
+	char *data_name;   //参数名称
+	int32 *data_value; //参数值
+	int32 icrement;	//参数累加数 如果是99就是on\off
+	int32 ip;		   //是否存放入flash的标志位,为负数时表示该参数不写入flash，为正数时表示存储扇区的偏移地址
 } Screen_Data;
 
 //输入的是当前的状态，返回的是操作后的状态

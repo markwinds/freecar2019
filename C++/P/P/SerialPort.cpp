@@ -286,6 +286,7 @@ UINT WINAPI CSerialPort::ListenThread(void* pParam)
 			{
 				//std::cout << cRecved;
 				/** 每个数据都以#结束 */
+				//cout << cRecved;
 				if (cRecved == '#')
 				{
 					data_buff[temp_data_count++] = '\0';
@@ -296,6 +297,7 @@ UINT WINAPI CSerialPort::ListenThread(void* pParam)
 				{
 					data_buff[temp_data_count++] = cRecved;
 				}
+				
 				continue;
 			}
 		} while (--BytesInQue);
