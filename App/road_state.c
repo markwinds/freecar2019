@@ -3,6 +3,7 @@
 
 /**状态保护位*/
 uint8 protect_flag = 0;
+uint32 timer_flag = 100;
 
 void checkSmallCircleLeft();
 
@@ -13,19 +14,24 @@ void setRoadTypeTimer(int16 time_long, void (*deal_function)())
     {
         return;
     }
-    pit_init_ms(PIT1, time_long);
-    set_vector_handler(PIT1_VECTORn, deal_function);
-    enable_irq(PIT1_IRQn);
+    pit_init_ms(PIT0, time_long);
+    set_vector_handler(PIT0_VECTORn, deal_function);
+    enable_irq(PIT0_IRQn);
 }
 
 void resetTimer()
 {
-    PIT_Flag_Clear(PIT1); //清中断标志位
-    disable_irq(PIT1_IRQn);
+    pit_close(PIT0);
     protect_flag = 0;
 }
 
 /******************************************函数************************************/
+
+void initJudgeRoad()
+{
+    pit_close(PIT0);
+    enable_irq(PIT0_IRQn);
+}
 
 void updataRoadState(RoadState *new_road_state)
 {
@@ -40,9 +46,12 @@ void updataRoadState(RoadState *new_road_state)
     {
         return;
     }
-    pit_init_ms(PIT1, now_road_state->protect_time);
-    set_vector_handler(PIT1_VECTORn, checkSmallCircleLeft);
-    enable_irq(PIT1_IRQn);
+    pit_init_ms(PIT0, now_road_state->protect_time);
+    set_vector_handler(PIT0_VECTORn, checkSmallCircleLeft);
+    getFlag();
+    //getFlag();
+    enable_irq(PIT0_IRQn);
+    //getFlag();
 }
 
 /*********************************************doNothing************************************/
@@ -79,8 +88,9 @@ void checkSmallCircleLeft()
     {
         fuck_you++;
         setSteer(-50);
-        printf("turn\n");
+        //printf("turn\n");
         DELAY_MS(2000);
+        led_turn(LED3);
     }
     //resetTimer();
 }

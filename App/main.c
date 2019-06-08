@@ -16,6 +16,7 @@ void main()
 	//camera_init(imgbuff);
 	initADC();
 	initBuzzer();
+	initJudgeRoad();
 
 	while (1)
 	{
