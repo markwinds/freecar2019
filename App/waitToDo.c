@@ -1,6 +1,8 @@
 #include "common.h"
 #include "include.h"
 
+int count_num = 0;
+
 void waitToDo()
 {
     led_turn(LED0);
@@ -20,5 +22,15 @@ void waitToDo()
     if (p_current_state == &show_ADC_value)
     {
         showADCVaule();
+    }
+    /**如果保护位关闭，则判定是否要更新路况*/
+    if (protect_flag == 0)
+    {
+        count_num++;
+        if (count_num > 100)
+        {
+            now_road_state = &straighta_way;
+            count_num = 0;
+        }
     }
 }

@@ -16,5 +16,6 @@
 extern void initADC();
 extern int32 getErrorFromADC();
 extern void showADCVaule();
+extern int32 getADCVaule(ADCn_Ch_e ADC_channel);
 
 #endif //_ADC_H

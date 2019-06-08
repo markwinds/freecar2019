@@ -12,11 +12,13 @@ int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
 
 int zbt = 0;
-int test_speed = 1300;
+int32 test_speed = 1300;
+int32 fuck_you = 0;
 Screen_Data screen_data[] = {
 	{"speed", &(test_speed), 100, -1},
 	{"PPP", &(ADC_pid.kp), 2, -1},
 	{"DDD", &(ADC_pid.kd), 2, -1},
+	{"fuck", &(fuck_you), 1, -1},
 
 	{"enM", &(zbt), 1, 0}, //使能电机
 	{"speed", &(zbt), 1, 4},

@@ -6,13 +6,14 @@
 
 typedef enum
 {
-    circle = 0
-} RoadType;
+    T2L1L1 = 0,
+    T1L5 = 1
+} SoundType;
 
 extern void initBuzzer();
 extern void openBuzzer();
 extern void closeBuzzer();
 extern void turnBuzzer();
-extern void tellMeRoadType(RoadType road_type);
+extern void tellMeRoadType(SoundType sound_type);
 
 #endif //_BUZZER_H_

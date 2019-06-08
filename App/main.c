@@ -19,17 +19,13 @@ void main()
 
 	while (1)
 	{
-
-		// setSpeedLeft(test_speed + speed_different);
-		//setSpeedRight(test_speed);
-		DELAY_MS(2000);
-		tellMeRoadType(circle);
+		//DELAY_MS(2000);
 		waitToDo();
 
-		// int32 error = getSteerPwmFromADCError();
-		// setSteer(error);
-		// setSpeedLeft(test_speed);
-		// setSpeedRight(test_speed);
+		int32 error = getSteerPwmFromADCError();
+		setSteer(error);
+		setSpeedLeft(test_speed);
+		setSpeedRight(test_speed);
 
 		// showADCVaule();
 

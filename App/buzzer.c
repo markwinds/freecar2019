@@ -2,7 +2,8 @@
 #include "include.h"
 
 int buzzer_music[][10] = {
-    {100, 100, 100, 0}
+    {100, 100, 100, 0},
+    {50, 0}
 
 };
 
@@ -26,9 +27,9 @@ void turnBuzzer()
     gpio_turn(PTD2);
 }
 
-void tellMeRoadType(RoadType road_type)
+void tellMeRoadType(SoundType sound_type)
 {
-    int *p = buzzer_music[road_type];
+    int *p = buzzer_music[sound_type];
     while (*p != 0)
     {
         turnBuzzer();

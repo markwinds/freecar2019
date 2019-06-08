@@ -61,6 +61,7 @@ extern void flash_Out();
 
 /*--------------------------------------------------变量--------------------------------------------------*/
 
-extern int test_speed;
+extern int32 test_speed;
+extern int32 fuck_you;
 
 #endif

@@ -38,6 +38,7 @@
 #include "adc.h"               //电磁采集
 #include "pid.h"               //pid控制
 #include "buzzer.h"            //蜂鸣器
+#include "road_state.h"        //判断当前的路况
 //#include "esp.h"         //无线模块
 
 #pragma diag_suppress = Pe1665
