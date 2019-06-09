@@ -3,7 +3,8 @@
 
 int buzzer_music[][10] = {
     {100, 100, 100, 0},
-    {50, 0}
+    {50, 0},
+    {0}
 
 };
 
@@ -29,6 +30,10 @@ void turnBuzzer()
 
 void tellMeRoadType(SoundType sound_type)
 {
+    if (sound_type == T0L0)
+    {
+        return;
+    }
     int *p = buzzer_music[sound_type];
     while (*p != 0)
     {

@@ -3,28 +3,61 @@
 
 /**状态保护位*/
 uint8 protect_flag = 0;
-
+uint8 enable_vertical_left = 0;
+uint8 go_straighta_flag = 0;
+int PIT2_count_num = 0;
 
 /******************************************定时器操作************************************/
 /*
+ *  @brief      关闭定时器并清楚保护位
+ */
+void resetTimer()
+{
+    pit_close(PIT0);
+    protect_flag = 0;
+}
+
+/*
+ *  @brief      PIT0中断服务函数
+ */
+void PIT0Function()
+{
+    resetTimer();
+    /**执行状态对应的中断函数*/
+    now_road_state->deal_timer();
+}
+
+void PIT2Function()
+{
+    PIT_Flag_Clear(PIT2);
+    /**如果保护位关闭，则判定是否要清空路况*/
+    if (protect_flag == 0)
+    {
+        PIT2_count_num++;
+        if (PIT2_count_num > 10) //1s
+        {
+            now_road_state = &straighta_way;
+            led_turn(LED3);
+            PIT2_count_num = 0;
+        }
+    }
+    else
+    {
+        PIT2_count_num = 0;
+    }
+}
+
+/*
  *  @brief      开启PIT0定时器和中断
  *  @param      time_long       定时的时长
- *  @param      deal_function   中断处理函数
  */
-void setRoadTypeTimer(int16 time_long, void (*deal_function)())
+void setRoadTypeTimer(int16 time_long)
 {
     if (time_long <= 0)
     {
         return;
     }
-    set_vector_handler(PIT0_VECTORn, deal_function);
     pit_init_ms(PIT0, time_long);
-}
-
-void resetTimer()
-{
-    pit_close(PIT0);
-    protect_flag = 0;
 }
 
 /***************************************相关函数************************************/
@@ -35,6 +68,11 @@ void initJudgeRoad()
 {
     pit_close(PIT0);
     enable_irq(PIT0_IRQn);
+    set_vector_handler(PIT0_VECTORn, PIT0Function);
+    /**设置PIT2定时器*/
+    pit_init_ms(PIT2, 100);
+    set_vector_handler(PIT2_VECTORn, PIT2Function);
+    enable_irq(PIT2_IRQn);
 }
 
 /*
@@ -51,7 +89,7 @@ void updataRoadState(RoadState *new_road_state)
     protect_flag = new_road_state->protect_time <= 0 ? 0 : 1;
     /**进入状态的预备操作*/
     now_road_state->enter_state();
-    setRoadTypeTimer(now_road_state->protect_time, now_road_state->deal_timer);
+    setRoadTypeTimer(now_road_state->protect_time);
 }
 
 /*********************************************doNothing************************************/
@@ -68,44 +106,76 @@ void makeSound()
     tellMeRoadType(now_road_state->sound_type);
 }
 
+void enableVerticalCircleLeft()
+{
+    enable_vertical_left = 1;
+    go_straighta_flag = 1;
+    openBuzzer();
+}
+
+void goCircleLeft()
+{
+    setSteer(-50);
+    DELAY_MS(200);
+    closeBuzzer();
+}
+
+/****************************************out function************************************/
+void unableVerticalCircleLeft()
+{
+    enable_vertical_left = 0;
+}
+
 /****************************************interrupt function************************************/
 
-void checkSmallCircleLeft()
+// void checkSmallCircleLeft()
+// {
+//     resetTimer();
+//     int32 mid = getADCVaule(horizontal_middle);
+//     int32 left = getADCVaule(horizontal_left);
+//     if (mid + left > 1800)
+//     {
+//         setSteer(-50);
+//         DELAY_MS(2000);
+//     }
+// }
+
+void clearGoStraightaFlag()
 {
-    resetTimer();
-    int32 mid = getADCVaule(horizontal_middle);
-    int32 left = getADCVaule(horizontal_left);
-    if (mid + left > 1800)
-    {
-        setSteer(-50);
-        DELAY_MS(200);
-    }
+    go_straighta_flag = 0;
 }
 
 /*********************************************定义道路类型************************************/
 RoadState straighta_way = {0, doNothings, doNothings, T2L1L1, resetTimer};
-// RoadState big_circle_left = {0, doNothings, doNothings, T2L1L1, resetTimer};
-// RoadState big_circle_right = {0, doNothings, doNothings, T2L1L1, resetTimer};
-RoadState small_circle_left_in = {500, makeSound, doNothings, T1L5, checkSmallCircleLeft};
-//RoadState small_circle_left1 = {3000, makeSound, doNothings, T1L5, checkSmallCircleLeft};
-// RoadState small_circle_right = {0, doNothings, doNothings, T1L5, resetTimer};
+
+RoadState circle_left_in1 = {300, enableVerticalCircleLeft, unableVerticalCircleLeft, T0L0, clearGoStraightaFlag};
+RoadState circle_left_in2 = {0, goCircleLeft, doNothings, T0L0, doNothings};
+//RoadState small_circle_left_in = {3000, makeSound, doNothings, T1L5, checkSmallCircleLeft};
 
 RoadState *now_road_state = &straighta_way;
 RoadState *last_road_state = &straighta_way;
 
 /*********************************************提供给外部的判别接口************************************/
-void judgeRoadFromADC(int32 mid, int32 left, int32 right)
+/*
+ *  @brief      根据电磁的数据判断道路情况
+ *  @param      mid       中间电感值
+ */
+void judgeRoadFromADC(int32 mid, int32 hl, int32 hr, int32 vl, int32 vr)
 {
     if (protect_flag)
     {
         return;
     }
-    if (mid + left > 1900)
+    if (enable_vertical_left && vl > 85)
     {
-        updataRoadState(&small_circle_left_in);
+        updataRoadState(&circle_left_in2);
     }
-    else if (mid + right > 1900)
+    else if (mid + hl > 1900)
     {
-        //updataRoadState(&small_circle_right);
+        updataRoadState(&circle_left_in1);
     }
+    // else if (mid + right > 1900)
+    // {
+    //     //updataRoadState(&small_circle_right);
+    // }
 }

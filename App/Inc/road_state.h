@@ -22,8 +22,9 @@ extern RoadState *now_road_state;
 extern RoadState *last_road_state;
 extern uint8 protect_flag;
 extern RoadState straighta_way, big_circle_left, big_circle_right, small_circle_left, small_circle_right;
+extern uint8 go_straighta_flag;
 
-extern void judgeRoadFromADC(int32 mid, int32 left, int32 right);
+extern void judgeRoadFromADC(int32 mid, int32 hl, int32 hr, int32 vl, int32 vr);
 //extern void checkSmallCircleLeft();
 extern void initJudgeRoad();
 

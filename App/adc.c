@@ -77,7 +77,7 @@ int32 getErrorFromADC()
         compensate = (int32)(500 / (float)ADC_vaule[1] * 50 - 20);
         compensate = ADC_vaule[0] > ADC_vaule[2] ? -1 * compensate : compensate;
     }
-    judgeRoadFromADC(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2]);
+    judgeRoadFromADC(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2], ADC_vaule[3], ADC_vaule[4]);
     return ((horizontal_dec_add * (200 - wright) + wright * vertical_dec_add) >> 7) + compensate;
 }
 
@@ -112,7 +112,7 @@ void showADCVaule()
     LCDShowNumDefule(60, 40, ADC_vaule[3]);
     LCDShowStringDefule(80, 0, "vr");
     LCDShowNumDefule(80, 40, ADC_vaule[4]);
-    judgeRoadFromADC(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2]);
+    //judgeRoadFromADC(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2]);
     DELAY_MS(1000);
 }
 
