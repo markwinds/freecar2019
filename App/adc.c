@@ -67,7 +67,7 @@ int32 getErrorFromADC()
     {
         return ADC_vaule[0] > ADC_vaule[2] ? -50000 : 50000;
     }
-    addVertical(&ADC_vaule[3], &ADC_vaule[4]);
+
     /**得到纵向和横向的差比和*/
     int32 horizontal_dec_add = getDecAdd(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2]);
     int32 vertical_dec_add = getDecAdd(ADC_vaule[1], ADC_vaule[3], ADC_vaule[4]);
@@ -128,11 +128,3 @@ int32 getADCVaule(ADCn_Ch_e ADC_channel)
 }
 
 //return ADC_vaule[0] > ADC_vaule[2] ? temp * -1 : temp;
-
-//LCDShowNumDefule(80, 20, ADC_vaule[1]);
-//int32 temp = ADC_vaule[1] < 960 ? (int32)(-2.5 * ADC_vaule[1] + 2512) : 0;
-//LCDShowNumDefule(100, 20, temp);
-// for (int j = 0; j < 5; j++)
-// {
-//     ADC_vaule[j] = getNormalization(ADC_vaule[j]);
-// }
