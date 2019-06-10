@@ -10,6 +10,8 @@ Site_t tem_site_str[] = {0, 0, 0, 20, 0, 40, 0, 60, 0, 80, 0, 100};
 Site_t tem_site_data[] = {60, 0, 60, 20, 60, 40, 60, 60, 60, 80, 60, 100};
 int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
+uint32 param1 = 250;
+uint32 param2 = 700;
 
 int zbt = 0;
 int32 test_speed = 1300;
@@ -20,8 +22,8 @@ Screen_Data screen_data[] = {
 	{"DDD", &(ADC_pid.kd), 2, -1},
 	{"fuck", &(fuck_you), 1, -1},
 
-	{"enM", &(zbt), 1, 0}, //使能电机
-	{"speed", &(zbt), 1, 4},
+	{"p1", &(param1), 1, -1},
+	{"p2", &(param2), 20, -1},
 
 	{"length", &(zbt), 1, 0},
 

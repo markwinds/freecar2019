@@ -3,8 +3,14 @@
 
 /**状态保护位*/
 uint8 protect_flag = 0;
-uint8 enable_vertical_left = 0;
 uint8 go_straighta_flag = 0;
+
+uint8 enable_vertical_left_in = 0;
+uint8 enable_vertical_left_out = 0;
+
+uint8 add_vl = 0;
+uint8 add_vr = 0;
+
 int PIT2_count_num = 0;
 
 /******************************************定时器操作************************************/
@@ -36,6 +42,8 @@ void PIT2Function()
         PIT2_count_num++;
         if (PIT2_count_num > 10) //1s
         {
+            now_road_state->out_state();
+            last_road_state = now_road_state == &straighta_way ? last_road_state : now_road_state;
             now_road_state = &straighta_way;
             led_turn(LED3);
             PIT2_count_num = 0;
@@ -92,6 +100,18 @@ void updataRoadState(RoadState *new_road_state)
     setRoadTypeTimer(now_road_state->protect_time);
 }
 
+void addVertical(int32 *left, int32 *right)
+{
+    if (add_vl)
+    {
+        *left += param2;
+    }
+    if (add_vr)
+    {
+        *right += param2;
+    }
+}
+
 /*********************************************doNothing************************************/
 void doNothings()
 {
@@ -106,9 +126,9 @@ void makeSound()
     tellMeRoadType(now_road_state->sound_type);
 }
 
-void enableVerticalCircleLeft()
+void enableVerticalCircleLeftIn()
 {
-    enable_vertical_left = 1;
+    enable_vertical_left_in = 1;
     go_straighta_flag = 1;
     openBuzzer();
 }
@@ -116,14 +136,37 @@ void enableVerticalCircleLeft()
 void goCircleLeft()
 {
     setSteer(-50);
+    DELAY_MS(param1);
+    //closeBuzzer();
+}
+
+void enableVerticalCircleLeftOut()
+{
+    enable_vertical_left_out = 1;
+    //add_vl = 1;
+    setSteer(-45);
     DELAY_MS(200);
-    closeBuzzer();
+    openBuzzer();
+}
+
+void addVr()
+{
+    //add_vr = 1;
+    setSteer(50);
+    DELAY_MS(100);
 }
 
 /****************************************out function************************************/
-void unableVerticalCircleLeft()
+void unableVerticalCircleLeftIn()
 {
-    enable_vertical_left = 0;
+    enable_vertical_left_in = 0;
+    closeBuzzer();
+}
+
+void unableVerticalCircleLeftOut()
+{
+    enable_vertical_left_out = 0;
+    closeBuzzer();
 }
 
 /****************************************interrupt function************************************/
@@ -145,12 +188,23 @@ void clearGoStraightaFlag()
     go_straighta_flag = 0;
 }
 
+void clearVl()
+{
+    add_vl = 0;
+}
+
+void clearVr()
+{
+    add_vr = 0;
+}
+
 /*********************************************定义道路类型************************************/
 RoadState straighta_way = {0, doNothings, doNothings, T2L1L1, resetTimer};
 
-RoadState circle_left_in1 = {300, enableVerticalCircleLeft, unableVerticalCircleLeft, T0L0, clearGoStraightaFlag};
+RoadState circle_left_in1 = {300, enableVerticalCircleLeftIn, unableVerticalCircleLeftIn, T0L0, clearGoStraightaFlag};
 RoadState circle_left_in2 = {0, goCircleLeft, doNothings, T0L0, doNothings};
-//RoadState small_circle_left_in = {3000, makeSound, doNothings, T1L5, checkSmallCircleLeft};
+RoadState circle_left_out1 = {300, enableVerticalCircleLeftOut, unableVerticalCircleLeftOut, T0L0, clearVl};
+RoadState circle_left_out2 = {300, addVr, doNothings, T0L0, clearVr};
 
 RoadState *now_road_state = &straighta_way;
 RoadState *last_road_state = &straighta_way;
@@ -166,7 +220,15 @@ void judgeRoadFromADC(int32 mid, int32 hl, int32 hr, int32 vl, int32 vr)
     {
         return;
     }
-    if (enable_vertical_left && vl > 85)
+    if (enable_vertical_left_out && vl > 100)
+    {
+        updataRoadState(&circle_left_out2);
+    }
+    if (last_road_state == &circle_left_in2 && mid + hl + hr > 2300)
+    {
+        updataRoadState(&circle_left_out1);
+    }
+    if (enable_vertical_left_in && vl > 85)
     {
         updataRoadState(&circle_left_in2);
     }
@@ -174,8 +236,4 @@ void judgeRoadFromADC(int32 mid, int32 hl, int32 hr, int32 vl, int32 vr)
     {
         updataRoadState(&circle_left_in1);
     }
-    // else if (mid + right > 1900)
-    // {
-    //     //updataRoadState(&small_circle_right);
-    // }
 }

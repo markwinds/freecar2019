@@ -61,11 +61,13 @@ int32 getErrorFromADC()
     {
         ADC_vaule[j] = getNormalization(sum[j] >> 3);
     }
+    judgeRoadFromADC(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2], ADC_vaule[3], ADC_vaule[4]);
     /**丢线的判定*/
     if (ADC_vaule[1] < 280)
     {
         return ADC_vaule[0] > ADC_vaule[2] ? -50000 : 50000;
     }
+    addVertical(&ADC_vaule[3], &ADC_vaule[4]);
     /**得到纵向和横向的差比和*/
     int32 horizontal_dec_add = getDecAdd(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2]);
     int32 vertical_dec_add = getDecAdd(ADC_vaule[1], ADC_vaule[3], ADC_vaule[4]);
@@ -77,7 +79,6 @@ int32 getErrorFromADC()
         compensate = (int32)(500 / (float)ADC_vaule[1] * 50 - 20);
         compensate = ADC_vaule[0] > ADC_vaule[2] ? -1 * compensate : compensate;
     }
-    judgeRoadFromADC(ADC_vaule[1], ADC_vaule[0], ADC_vaule[2], ADC_vaule[3], ADC_vaule[4]);
     return ((horizontal_dec_add * (200 - wright) + wright * vertical_dec_add) >> 7) + compensate;
 }
 

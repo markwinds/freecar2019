@@ -63,5 +63,7 @@ extern void flash_Out();
 
 extern int32 test_speed;
 extern int32 fuck_you;
+extern uint32 param1;
+extern uint32 param2;
 
 #endif
