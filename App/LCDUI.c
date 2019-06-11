@@ -10,8 +10,8 @@ Site_t tem_site_str[] = {0, 0, 0, 20, 0, 40, 0, 60, 0, 80, 0, 100};
 Site_t tem_site_data[] = {60, 0, 60, 20, 60, 40, 60, 60, 60, 80, 60, 100};
 int page = 1;		 //lcd当前所在页
 int current_row = 0; //当前所在行
-uint32 param1 = 250;
-uint32 param2 = 700;
+uint32 param1 = 40;
+uint32 param2 = 25;
 
 int zbt = 0;
 int32 test_speed = 1300;
@@ -23,7 +23,7 @@ Screen_Data screen_data[] = {
 	{"fuck", &(fuck_you), 1, -1},
 
 	{"p1", &(param1), 1, -1},
-	{"p2", &(param2), 20, -1},
+	{"p2", &(param2), 1, -1},
 
 	{"length", &(zbt), 1, 0},
 
@@ -87,6 +87,7 @@ Lcd_State *imgbuffShowToShowADCvalue(Lcd_State *pThis)
 {
 	closeCamera();
 	LCD_clear(WHITE);
+	initADCUI();
 	return &show_ADC_value;
 }
 
@@ -380,6 +381,35 @@ Lcd_State *showADCVauleToImgbuffShow(Lcd_State *pThis)
 	return &imgbuff_show;
 }
 
+Lcd_State *showADCVauleUp(Lcd_State *pThis)
+{
+	showADCSeletPoint(WHITE);
+	ADCSelteBefore();
+	showADCSeletPoint(RED);
+	return pThis;
+}
+
+Lcd_State *showADCVauleDown(Lcd_State *pThis)
+{
+	showADCSeletPoint(WHITE);
+	ADCSelteNext();
+	showADCSeletPoint(RED);
+	return pThis;
+}
+
+Lcd_State *showADCVauleLeft(Lcd_State *pThis)
+{
+	writeADCParamToFlash();
+	tellMeRoadType(T4L1515);
+	return pThis;
+}
+
+Lcd_State *showADCVauleRight(Lcd_State *pThis)
+{
+	updateADCMaxVaule();
+	return pThis;
+}
+
 /*---------------------------------------------do nothing----------------------------------------------*/
 
 Lcd_State *doNothing(Lcd_State *pThis) //忽略按键操作，返回原来的状态即保持状态不变
@@ -540,8 +570,8 @@ Lcd_State set_value =
 Lcd_State show_ADC_value =
 	{
 		showADCVauleToImgbuffShow, //中
-		doNothing,				   //上
-		doNothing,				   //下
-		doNothing,				   //左
-		doNothing				   //右
+		showADCVauleUp,			   //上
+		showADCVauleDown,		   //下
+		showADCVauleLeft,		   //左
+		showADCVauleRight		   //右
 };

@@ -19,6 +19,8 @@ void waitToDo()
     }
     if (p_current_state == &show_ADC_value)
     {
-        showADCVaule();
+        updateADCVaule();
+        showADCvaule();
+        DELAY_MS(500);
     }
 }

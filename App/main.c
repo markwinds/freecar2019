@@ -23,17 +23,10 @@ void main()
 		//DELAY_MS(2000);
 		waitToDo();
 
-		if (0)
-		{
-			setSteer(0);
-		}
-		else
-		{
-			int32 error = getSteerPwmFromADCError();
-			setSteer(error);
-			setSpeedLeft(test_speed);
-			setSpeedRight(test_speed);
-		}
+		int32 error = getSteerPwmFromADCError();
+		setSteer(error + steer_offset);
+		setSpeedLeft(test_speed);
+		setSpeedRight(test_speed);
 
 		// showADCVaule();
 
