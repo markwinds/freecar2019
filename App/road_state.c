@@ -4,6 +4,9 @@
 ADCMode ADC_mode = N5;
 int64 time_long = 0;
 int32 ADC_middle_max = 0;
+/**圆环的参数*/
+int in_circle_steer = 40;  //进圆环时舵机的偏向角
+int out_circle_steer = 10; //出环时的舵机偏向角
 
 void doNothings()
 {
@@ -94,25 +97,25 @@ void getRoadName(char *p)
     {
         strcpy(p, "circle_left_in1");
     }
-    else if (now_road_state == &circle_left_in1)
-    {
-        strcpy(p, "circle_left_in1");
-    }
     else if (now_road_state == &circle_left_in2)
     {
         strcpy(p, "circle_left_in2");
     }
-    else if (now_road_state == &circle_left_out1)
-    {
-        strcpy(p, "circle_left_out1");
-    }
-    else if (now_road_state == &circle_left_out2)
-    {
-        strcpy(p, "circle_left_out2");
-    }
     else if (now_road_state == &circle_left_in3)
     {
         strcpy(p, "circle_left_in3");
+    }
+    else if (now_road_state == &circle_right_in1)
+    {
+        strcpy(p, "circle_right_in1");
+    }
+    else if (now_road_state == &circle_right_in2)
+    {
+        strcpy(p, "circle_right_in2");
+    }
+    else if (now_road_state == &circle_right_in3)
+    {
+        strcpy(p, "circle_right_in3");
     }
 }
 
@@ -139,11 +142,12 @@ void outputRoadStateExit()
 // RoadState circle_left_out1 = {300, enableVerticalCircleLeftOut, unableVerticalCircleLeftOut, T0L0, clearVl};
 // RoadState circle_left_out2 = {300, addVr, doNothings, T0L0, clearVr};
 RoadState straighta_way = {0, outputRoadStateEnter, outputRoadStateExit};
-RoadState circle_left_in1 = {2000, outputRoadStateEnter, outputRoadStateExit};
-RoadState circle_left_in2 = {7000, outputRoadStateEnter, outputRoadStateExit};
-RoadState circle_left_in3 = {3000, outputRoadStateEnter, outputRoadStateExit};
-RoadState circle_left_out1 = {1000, outputRoadStateEnter, outputRoadStateExit};
-RoadState circle_left_out2 = {1000, outputRoadStateEnter, outputRoadStateExit};
+RoadState circle_left_in1 = {3000, doNothings, doNothings};
+RoadState circle_left_in2 = {7000, doNothings, doNothings};
+RoadState circle_left_in3 = {3000, doNothings, doNothings};
+RoadState circle_right_in1 = {3000, doNothings, doNothings};
+RoadState circle_right_in2 = {7000, doNothings, doNothings};
+RoadState circle_right_in3 = {3000, doNothings, doNothings};
 
 RoadState *now_road_state = &straighta_way;
 RoadState *last_road_state = &straighta_way;
@@ -155,12 +159,14 @@ RoadState *last_road_state = &straighta_way;
  */
 void judgeRoadFromADC(int32 mid, int32 hl, int32 hr, int32 vl, int32 vr)
 {
-    /**状态判定*/
-    if (now_road_state == &circle_left_in2 &&
-        mid > 1500)
+    /*****************************状态判定**************************/
+    /**左环*/
+    if (now_road_state == &straighta_way &&
+        mid + hl > 2200)
     {
-        updataRoadState(&circle_left_in3);
+        updataRoadState(&circle_left_in1);
         ADC_middle_max = 0;
+        steer_offset = 7;
     }
     else if (now_road_state == &circle_left_in1 &&
              mid + hl < 1400 &&
@@ -168,29 +174,69 @@ void judgeRoadFromADC(int32 mid, int32 hl, int32 hr, int32 vl, int32 vr)
     {
         updataRoadState(&circle_left_in2);
     }
-    else if (now_road_state == &straighta_way &&
-             mid + hl > 2200)
+    else if (now_road_state == &circle_left_in2 &&
+             mid > 1500)
     {
-        updataRoadState(&circle_left_in1);
+        updataRoadState(&circle_left_in3);
         ADC_middle_max = 0;
     }
-    /**状态内操作*/
+    /**右环*/
+    if (now_road_state == &straighta_way &&
+        mid + hr > 2200)
+    {
+        updataRoadState(&circle_right_in1);
+        ADC_middle_max = 0;
+        steer_offset = -7;
+    }
+    else if (now_road_state == &circle_right_in1 &&
+             mid + hr < 1400 &&
+             hl < 1000)
+    {
+        updataRoadState(&circle_right_in2);
+    }
+    else if (now_road_state == &circle_right_in2 &&
+             mid > 1500)
+    {
+        updataRoadState(&circle_right_in3);
+        ADC_middle_max = 0;
+    }
+    /************************状态内操作*****************************/
+    /**左环*/
     if (now_road_state == &circle_left_in1)
     {
         if (ADC_normal_vaule[0] < last_ADC_normal_vaule[0] && ADC_normal_vaule[0] < ADC_middle_max - 120)
         {
-            steer_offset = -1 * (int32)param1;
+            steer_offset = -1 * in_circle_steer;
         }
     }
     else if (now_road_state == &circle_left_in2)
     {
-        steer_offset = -1 * (int32)param1;
+        steer_offset = -1 * in_circle_steer;
     }
     else if (now_road_state == &circle_left_in3)
     {
+        if (ADC_normal_vaule[0] < last_ADC_normal_vaule[0] && ADC_normal_vaule[0] < ADC_middle_max - 83)
+        {
+            steer_offset = out_circle_steer;
+        }
+    }
+    /**右环*/
+    if (now_road_state == &circle_right_in1)
+    {
         if (ADC_normal_vaule[0] < last_ADC_normal_vaule[0] && ADC_normal_vaule[0] < ADC_middle_max - 120)
         {
-            steer_offset = param2;
+            steer_offset = in_circle_steer;
+        }
+    }
+    else if (now_road_state == &circle_right_in2)
+    {
+        steer_offset = in_circle_steer;
+    }
+    else if (now_road_state == &circle_right_in3)
+    {
+        if (ADC_normal_vaule[0] < last_ADC_normal_vaule[0] && ADC_normal_vaule[0] < ADC_middle_max - 83)
+        {
+            steer_offset = -1 * out_circle_steer;
         }
     }
 }

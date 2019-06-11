@@ -25,7 +25,9 @@ typedef enum
 
 extern RoadState *now_road_state;
 extern RoadState *last_road_state;
-extern RoadState straighta_way, circle_left_in1, circle_left_in2, circle_left_out1, circle_left_out2, circle_left_in3;
+extern RoadState straighta_way,
+    circle_left_in1, circle_left_in2, circle_left_in3,
+    circle_right_in1, circle_right_in2, circle_right_in3;
 extern ADCMode ADC_mode;
 extern int32 ADC_middle_max;
 
